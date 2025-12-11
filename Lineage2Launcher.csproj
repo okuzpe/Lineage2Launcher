@@ -25,6 +25,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
+    <!-- Excluir archivos WinForms antiguos (preservados como backup) -->
+    <Compile Remove="MainForm.cs" />
+    <Compile Remove="Program.cs" />
   </ItemGroup>
 
   <Target Name="CopyImagesToPublish" AfterTargets="Publish">
