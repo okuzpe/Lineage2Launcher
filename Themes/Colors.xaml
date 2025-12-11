@@ -1,0 +1,47 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!-- Paleta Épica Fantasy - Lineage II -->
+    
+    <!-- Colores Base -->
+    <Color x:Key="PrimaryBlack">#0B0B0F</Color>
+    <Color x:Key="MetallicGray">#1E2226</Color>
+    <Color x:Key="OldGold">#B8860B</Color>
+    <Color x:Key="BrightGold">#D4AF37</Color>
+    <Color x:Key="PlayRed">#6C1B1B</Color>
+    <Color x:Key="BloodRed">#7A0B0B</Color>
+    <Color x:Key="LightGray">#C0C0C0</Color>
+    <Color x:Key="MediumGray">#808080</Color>
+    
+    <!-- Brushes -->
+    <SolidColorBrush x:Key="PrimaryBlackBrush" Color="{StaticResource PrimaryBlack}"/>
+    <SolidColorBrush x:Key="MetallicGrayBrush" Color="{StaticResource MetallicGray}"/>
+    <SolidColorBrush x:Key="OldGoldBrush" Color="{StaticResource OldGold}"/>
+    <SolidColorBrush x:Key="BrightGoldBrush" Color="{StaticResource BrightGold}"/>
+    <SolidColorBrush x:Key="PlayRedBrush" Color="{StaticResource PlayRed}"/>
+    <SolidColorBrush x:Key="BloodRedBrush" Color="{StaticResource BloodRed}"/>
+    <SolidColorBrush x:Key="LightGrayBrush" Color="{StaticResource LightGray}"/>
+    <SolidColorBrush x:Key="MediumGrayBrush" Color="{StaticResource MediumGray}"/>
+    
+    <!-- Text Colors -->
+    <SolidColorBrush x:Key="TextOnDarkBrush" Color="{StaticResource LightGray}"/>
+    <SolidColorBrush x:Key="TextOnGoldBrush" Color="{StaticResource PrimaryBlack}"/>
+    
+    <!-- Status Colors -->
+    <SolidColorBrush x:Key="ServerOnlineBrush" Color="#00FF00"/>
+    <SolidColorBrush x:Key="ServerMaintenanceBrush" Color="#FFFF00"/>
+    <SolidColorBrush x:Key="ServerOfflineBrush" Color="#FF0000"/>
+    
+    <!-- Gradients -->
+    <LinearGradientBrush x:Key="GoldGradientBrush" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="{StaticResource OldGold}" Offset="0"/>
+        <GradientStop Color="{StaticResource BrightGold}" Offset="1"/>
+    </LinearGradientBrush>
+    
+    <LinearGradientBrush x:Key="GoldGradientHorizontalBrush" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="{StaticResource OldGold}" Offset="0"/>
+        <GradientStop Color="{StaticResource BrightGold}" Offset="1"/>
+    </LinearGradientBrush>
+    
+</ResourceDictionary>
+
