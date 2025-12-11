@@ -1,60 +1,213 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     
-    <!-- Play Button Style -->
+    <!-- Play Button Style - Epic with Bevel, Gloss and Advanced Effects -->
     <Style x:Key="PlayButtonStyle" TargetType="Button">
-        <Setter Property="Background" Value="{StaticResource GoldGradientBrush}"/>
-        <Setter Property="Foreground" Value="{StaticResource TextOnGoldBrush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource OldGoldBrush}"/>
-        <Setter Property="BorderThickness" Value="2"/>
-        <Setter Property="FontSize" Value="18"/>
+        <Setter Property="Background" Value="{StaticResource PlayButtonGradientBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource BrightGoldBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource GoldBorderGradientBrush}"/>
+        <Setter Property="BorderThickness" Value="4"/>
+        <Setter Property="FontFamily" Value="{StaticResource EpicTitleFont}"/>
+        <Setter Property="FontSize" Value="36"/>
         <Setter Property="FontWeight" Value="Bold"/>
-        <Setter Property="Padding" Value="20,10"/>
+        <Setter Property="Padding" Value="40,20"/>
         <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Width" Value="520"/>
+        <Setter Property="Height" Value="84"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border x:Name="border"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="6">
-                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
+                    <Grid>
+                        <!-- Outer Border with Metallic Gold Gradient -->
+                        <Border x:Name="OuterBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8">
+                            <Grid>
+                                <!-- Inner darker inset for bevel effect -->
+                                <Border x:Name="InnerBevel"
+                                        Margin="4"
+                                        CornerRadius="6"
+                                        Background="{TemplateBinding Background}"
+                                        BorderBrush="{StaticResource PrimaryBlackBrush}"
+                                        BorderThickness="1"
+                                        Opacity="0.5">
+                                    <Grid>
+                                        <!-- Top Gloss Effect (white->transparent gradient) -->
+                                        <Rectangle x:Name="TopGloss"
+                                                   Height="8"
+                                                   VerticalAlignment="Top"
+                                                   Opacity="0.28"
+                                                   RadiusX="6"
+                                                   RadiusY="6">
+                                            <Rectangle.Fill>
+                                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                    <GradientStop Color="#FFFFFFFF" Offset="0"/>
+                                                    <GradientStop Color="#00FFFFFF" Offset="1"/>
+                                                </LinearGradientBrush>
+                                            </Rectangle.Fill>
+                                        </Rectangle>
+                                        
+                                        <!-- Content Presenter -->
+                                        <ContentPresenter HorizontalAlignment="Center" 
+                                                        VerticalAlignment="Center"
+                                                        Content="{TemplateBinding Content}"/>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+                            
+                            <!-- Base shadow effect -->
+                            <Border.Effect>
+                                <DropShadowEffect Color="#000000" 
+                                                  BlurRadius="5" 
+                                                  ShadowDepth="2" 
+                                                  Opacity="0.5"
+                                                  Direction="225"/>
+                            </Border.Effect>
+                        </Border>
+                        
+                        <!-- Glow Layer (hidden by default, shown on hover) -->
+                        <Border x:Name="GlowLayer"
+                                CornerRadius="8"
+                                BorderThickness="0"
+                                Background="Transparent"
+                                Opacity="0">
+                            <Border.Effect>
+                                <DropShadowEffect Color="{StaticResource OldGold}" 
+                                                  BlurRadius="22" 
+                                                  ShadowDepth="0" 
+                                                  Opacity="1.0"/>
+                            </Border.Effect>
+                        </Border>
+                    </Grid>
+                    
                     <ControlTemplate.Triggers>
+                        <!-- Hover State: Scale + Glow -->
                         <Trigger Property="IsMouseOver" Value="True">
                             <Trigger.EnterActions>
                                 <BeginStoryboard>
                                     <Storyboard>
-                                        <DoubleAnimation Storyboard.TargetName="border"
+                                        <!-- Scale Animation -->
+                                        <DoubleAnimation Storyboard.TargetName="OuterBorder"
                                                          Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
-                                                         To="1.03" Duration="0:0:0.2"/>
-                                        <DoubleAnimation Storyboard.TargetName="border"
+                                                         To="1.03" 
+                                                         Duration="0:0:0.3">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut"/>
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                        <DoubleAnimation Storyboard.TargetName="OuterBorder"
                                                          Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
-                                                         To="1.03" Duration="0:0:0.2"/>
+                                                         To="1.03" 
+                                                         Duration="0:0:0.3">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut"/>
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                        <!-- Glow Fade In -->
+                                        <DoubleAnimation Storyboard.TargetName="GlowLayer"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="1"
+                                                         Duration="0:0:0.3">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut"/>
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                        <!-- Enhanced Gloss on Hover -->
+                                        <DoubleAnimation Storyboard.TargetName="TopGloss"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="0.25"
+                                                         Duration="0:0:0.3"/>
                                     </Storyboard>
                                 </BeginStoryboard>
                             </Trigger.EnterActions>
                             <Trigger.ExitActions>
                                 <BeginStoryboard>
                                     <Storyboard>
-                                        <DoubleAnimation Storyboard.TargetName="border"
+                                        <!-- Scale Animation Back -->
+                                        <DoubleAnimation Storyboard.TargetName="OuterBorder"
                                                          Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
-                                                         To="1.0" Duration="0:0:0.2"/>
-                                        <DoubleAnimation Storyboard.TargetName="border"
+                                                         To="1.0" 
+                                                         Duration="0:0:0.3">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut"/>
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                        <DoubleAnimation Storyboard.TargetName="OuterBorder"
                                                          Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
-                                                         To="1.0" Duration="0:0:0.2"/>
+                                                         To="1.0" 
+                                                         Duration="0:0:0.3">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut"/>
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                        <!-- Glow Fade Out -->
+                                        <DoubleAnimation Storyboard.TargetName="GlowLayer"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="0"
+                                                         Duration="0:0:0.3">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut"/>
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                        <!-- Gloss Back to Normal -->
+                                        <DoubleAnimation Storyboard.TargetName="TopGloss"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="0.28"
+                                                         Duration="0:0:0.3"/>
                                     </Storyboard>
                                 </BeginStoryboard>
                             </Trigger.ExitActions>
-                            <Setter TargetName="border" Property="Effect">
-                                <Setter.Value>
-                                    <DropShadowEffect Color="{StaticResource BrightGold}" 
-                                                      BlurRadius="15" 
-                                                      ShadowDepth="0" 
-                                                      Opacity="0.8"/>
-                                </Setter.Value>
-                            </Setter>
+                        </Trigger>
+                        
+                        <!-- Pressed State: Scale Down -->
+                        <Trigger Property="IsPressed" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="OuterBorder"
+                                                         Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                         To="0.99" 
+                                                         Duration="0:0:0.12">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut"/>
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                        <DoubleAnimation Storyboard.TargetName="OuterBorder"
+                                                         Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                         To="0.99" 
+                                                         Duration="0:0:0.12">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut"/>
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                        <!-- Reduce Glow on Press -->
+                                        <DoubleAnimation Storyboard.TargetName="GlowLayer"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="0.5"
+                                                         Duration="0:0:0.12"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="OuterBorder"
+                                                         Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                         To="1.0" 
+                                                         Duration="0:0:0.12"/>
+                                        <DoubleAnimation Storyboard.TargetName="OuterBorder"
+                                                         Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                         To="1.0" 
+                                                         Duration="0:0:0.12"/>
+                                        <DoubleAnimation Storyboard.TargetName="GlowLayer"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="1"
+                                                         Duration="0:0:0.12"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -75,40 +228,60 @@
     <!-- Server Item Style -->
     <Style x:Key="ServerItemStyle" TargetType="Border">
         <Setter Property="Background" Value="{StaticResource MetallicGrayBrush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource OldGoldBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource GoldGradientBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Padding" Value="10"/>
         <Setter Property="Margin" Value="5"/>
         <Setter Property="CornerRadius" Value="4"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <!-- Subtle inner shadow for depth -->
+                <DropShadowEffect Color="#000000" 
+                                  BlurRadius="2" 
+                                  ShadowDepth="-0.5" 
+                                  Opacity="0.4"
+                                  Direction="315"/>
+            </Setter.Value>
+        </Setter>
     </Style>
     
-    <!-- Progress Bar Style -->
+    <!-- Progress Bar Style - Exact match to reference -->
     <Style x:Key="ProgressBarStyle" TargetType="ProgressBar">
-        <Setter Property="Background" Value="{StaticResource MetallicGrayBrush}"/>
-        <Setter Property="Foreground" Value="{StaticResource GoldGradientHorizontalBrush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource OldGoldBrush}"/>
-        <Setter Property="BorderThickness" Value="2"/>
-        <Setter Property="Height" Value="40"/>
+        <Setter Property="Background" Value="{StaticResource PrimaryBlackBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource ProgressFillGradientBrush}"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Height" Value="30"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ProgressBar">
                     <Border x:Name="border"
                             Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="4">
+                            BorderBrush="Transparent"
+                            BorderThickness="0"
+                            CornerRadius="2">
+                        <Border.Effect>
+                            <!-- Metallic border effect -->
+                            <DropShadowEffect Color="{StaticResource OldGold}" 
+                                              BlurRadius="2" 
+                                              ShadowDepth="1" 
+                                              Opacity="0.5"
+                                              Direction="135"/>
+                        </Border.Effect>
                         <Grid>
                             <Rectangle x:Name="PART_Track" Fill="{TemplateBinding Background}"/>
                             <Rectangle x:Name="PART_Indicator" 
                                        Fill="{TemplateBinding Foreground}"
-                                       HorizontalAlignment="Left">
+                                       HorizontalAlignment="Left"
+                                       RadiusX="1" RadiusY="1">
+                                <!-- Shimmer effect -->
+                                <Rectangle.Effect>
+                                    <DropShadowEffect Color="{StaticResource BrightGold}" 
+                                                      BlurRadius="8" 
+                                                      ShadowDepth="0" 
+                                                      Opacity="0.6"/>
+                                </Rectangle.Effect>
                             </Rectangle>
-                            <TextBlock Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Value, StringFormat='{}{0}%'}"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"
-                                       Foreground="White"
-                                       FontWeight="Bold"
-                                       FontSize="11"/>
                         </Grid>
                     </Border>
                 </ControlTemplate>
@@ -116,21 +289,155 @@
         </Setter>
     </Style>
     
+    <!-- Progress Bar Shimmer Animation -->
+    <Storyboard x:Key="ProgressShimmerAnimation" RepeatBehavior="Forever">
+        <DoubleAnimation Storyboard.TargetProperty="(Rectangle.Fill).(LinearGradientBrush.Transform).(TranslateTransform.X)"
+                         From="-200" To="200" Duration="0:0:1.2"/>
+    </Storyboard>
+    
     <!-- News Item Style -->
     <Style x:Key="NewsItemStyle" TargetType="Border">
         <Setter Property="Background" Value="{StaticResource MetallicGrayBrush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource OldGoldBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource GoldGradientBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Padding" Value="15"/>
         <Setter Property="Margin" Value="10,5"/>
         <Setter Property="CornerRadius" Value="6"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <!-- Subtle inner shadow for depth -->
+                <DropShadowEffect Color="#000000" 
+                                  BlurRadius="2" 
+                                  ShadowDepth="-0.5" 
+                                  Opacity="0.4"
+                                  Direction="315"/>
+            </Setter.Value>
+        </Setter>
     </Style>
     
-    <!-- Window Frame Style -->
+    <!-- Window Frame Style - Ornate golden border with metallic relief -->
     <Style x:Key="WindowFrameStyle" TargetType="Border">
-        <Setter Property="BorderBrush" Value="{StaticResource OldGoldBrush}"/>
-        <Setter Property="BorderThickness" Value="3"/>
+        <Setter Property="BorderBrush" Value="{StaticResource GoldGradientBrush}"/>
+        <Setter Property="BorderThickness" Value="5"/>
         <Setter Property="Background" Value="{StaticResource PrimaryBlackBrush}"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <!-- Enhanced metallic relief effect -->
+                <DropShadowEffect Color="{StaticResource OldGold}" 
+                                  BlurRadius="6" 
+                                  ShadowDepth="2" 
+                                  Opacity="0.8"
+                                  Direction="135"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <!-- Gold Border Style with texture effect -->
+    <Style x:Key="GoldBorderStyle" TargetType="Border">
+        <Setter Property="BorderBrush" Value="{StaticResource GoldGradientBrush}"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <!-- Combined emboss and glow effect -->
+                <DropShadowEffect Color="{StaticResource BrightGold}" 
+                                  BlurRadius="5" 
+                                  ShadowDepth="1" 
+                                  Opacity="0.75"
+                                  Direction="135"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <!-- Gold Border with Texture - Lineage 2 Style -->
+    <Style x:Key="GoldBorderTexturedStyle" TargetType="Border">
+        <Setter Property="BorderBrush">
+            <Setter.Value>
+                <!-- Multi-layer brush: gradient + texture overlay -->
+                <VisualBrush x:Name="GoldTexturedBrush" 
+                             TileMode="Tile" 
+                             Viewport="0,0,100,100" 
+                             ViewportUnits="Absolute"
+                             Stretch="None">
+                    <VisualBrush.Visual>
+                        <Grid>
+                            <!-- Base gradient -->
+                            <Rectangle>
+                                <Rectangle.Fill>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                        <GradientStop Color="#F0D896" Offset="0"/>
+                                        <GradientStop Color="#B8860B" Offset="0.5"/>
+                                        <GradientStop Color="#9A7A0A" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Rectangle.Fill>
+                            </Rectangle>
+                            <!-- Texture overlay (will be set from code) -->
+                            <Rectangle x:Name="TextureOverlay" Opacity="0.25">
+                                <Rectangle.Fill>
+                                    <ImageBrush x:Name="GoldTextureBrush" 
+                                                Stretch="UniformToFill" 
+                                                TileMode="Tile"
+                                                Viewport="0,0,50,50"
+                                                ViewportUnits="Absolute"/>
+                                </Rectangle.Fill>
+                            </Rectangle>
+                        </Grid>
+                    </VisualBrush.Visual>
+                </VisualBrush>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <!-- Enhanced metallic relief with texture -->
+                <DropShadowEffect Color="{StaticResource OldGold}" 
+                                  BlurRadius="6" 
+                                  ShadowDepth="2" 
+                                  Opacity="0.85"
+                                  Direction="135"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <!-- Window Control Button Style -->
+    <Style x:Key="WindowControlButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{StaticResource GoldPaleBrush}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{StaticResource OldGoldBrush}"
+                            BorderThickness="1"
+                            CornerRadius="2">
+                        <ContentPresenter HorizontalAlignment="Center" 
+                                        VerticalAlignment="Center"
+                                        Content="{TemplateBinding Content}"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource MetallicGrayBrush}"/>
+                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource BrightGoldBrush}"/>
+                            <Setter Property="Foreground" Value="{StaticResource BrightGoldBrush}"/>
+                            <Setter TargetName="border" Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect Color="{StaticResource BrightGold}" 
+                                                      BlurRadius="5" 
+                                                      ShadowDepth="0" 
+                                                      Opacity="0.8"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource PrimaryBlackBrush}"/>
+                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource OldGoldBrush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
     
 </ResourceDictionary>

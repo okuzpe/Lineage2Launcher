@@ -12,3 +12,5 @@ Los siguientes archivos SVG son placeholders y deben ser reemplazados con los ic
 
 Reemplazar estos placeholders con los archivos SVG reales en esta carpeta.
 
+
+

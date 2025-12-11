@@ -1,0 +1,186 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!-- Status Dot Paths (from SVG) -->
+    
+    <!-- Status Dot Online (Green with glow) -->
+    <PathGeometry x:Key="StatusDotOnlinePath">
+        <PathFigure StartPoint="6,1">
+            <ArcSegment Point="11,6" Size="5,5" SweepDirection="Clockwise"/>
+            <ArcSegment Point="6,11" Size="5,5" SweepDirection="Clockwise"/>
+            <ArcSegment Point="1,6" Size="5,5" SweepDirection="Clockwise"/>
+            <ArcSegment Point="6,1" Size="5,5" SweepDirection="Clockwise"/>
+        </PathFigure>
+    </PathGeometry>
+    
+    <!-- Status Dot Busy (Yellow) -->
+    <PathGeometry x:Key="StatusDotBusyPath">
+        <PathFigure StartPoint="6,1">
+            <ArcSegment Point="11,6" Size="5,5" SweepDirection="Clockwise"/>
+            <ArcSegment Point="6,11" Size="5,5" SweepDirection="Clockwise"/>
+            <ArcSegment Point="1,6" Size="5,5" SweepDirection="Clockwise"/>
+            <ArcSegment Point="6,1" Size="5,5" SweepDirection="Clockwise"/>
+        </PathFigure>
+    </PathGeometry>
+    
+    <!-- Status Dot Offline (Red) -->
+    <PathGeometry x:Key="StatusDotOfflinePath">
+        <PathFigure StartPoint="6,1">
+            <ArcSegment Point="11,6" Size="5,5" SweepDirection="Clockwise"/>
+            <ArcSegment Point="6,11" Size="5,5" SweepDirection="Clockwise"/>
+            <ArcSegment Point="1,6" Size="5,5" SweepDirection="Clockwise"/>
+            <ArcSegment Point="6,1" Size="5,5" SweepDirection="Clockwise"/>
+        </PathFigure>
+    </PathGeometry>
+    
+    <!-- Play Icon Path -->
+    <PathGeometry x:Key="PlayIconPath">
+        <PathFigure StartPoint="8,5" IsClosed="True">
+            <LineSegment Point="8,19"/>
+            <LineSegment Point="19,12"/>
+        </PathFigure>
+    </PathGeometry>
+    
+    <!-- Star Icon Path (for favorites) -->
+    <PathGeometry x:Key="StarIconPath">
+        <PathFigure StartPoint="12,2" IsClosed="True">
+            <LineSegment Point="15.09,8.26"/>
+            <LineSegment Point="22,9.27"/>
+            <LineSegment Point="17,14.14"/>
+            <LineSegment Point="18.18,21.02"/>
+            <LineSegment Point="12,17.77"/>
+            <LineSegment Point="5.82,21.02"/>
+            <LineSegment Point="7,14.14"/>
+            <LineSegment Point="2,9.27"/>
+            <LineSegment Point="8.91,8.26"/>
+        </PathFigure>
+    </PathGeometry>
+    
+    <!-- Status Dot Styles -->
+    <Style x:Key="StatusDotOnlineStyle" TargetType="Ellipse">
+        <Setter Property="Width" Value="10"/>
+        <Setter Property="Height" Value="10"/>
+        <Setter Property="Fill" Value="{StaticResource GreenOnlineBrush}"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="#00FF00" BlurRadius="3" ShadowDepth="0" Opacity="0.8"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <Style x:Key="StatusDotBusyStyle" TargetType="Ellipse">
+        <Setter Property="Width" Value="10"/>
+        <Setter Property="Height" Value="10"/>
+        <Setter Property="Fill" Value="Yellow"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="#FFFF00" BlurRadius="3" ShadowDepth="0" Opacity="0.8"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <Style x:Key="StatusDotOfflineStyle" TargetType="Ellipse">
+        <Setter Property="Width" Value="10"/>
+        <Setter Property="Height" Value="10"/>
+        <Setter Property="Fill" Value="Red"/>
+        <Setter Property="Opacity" Value="0.8"/>
+    </Style>
+    
+    <!-- Play Icon Style -->
+    <Style x:Key="PlayIconStyle" TargetType="Path">
+        <Setter Property="Data" Value="{StaticResource PlayIconPath}"/>
+        <Setter Property="Fill" Value="{StaticResource OldGoldBrush}"/>
+        <Setter Property="Stretch" Value="Uniform"/>
+        <Setter Property="Width" Value="24"/>
+        <Setter Property="Height" Value="24"/>
+    </Style>
+    
+    <!-- Star Icon Style -->
+    <Style x:Key="StarIconStyle" TargetType="Path">
+        <Setter Property="Data" Value="{StaticResource StarIconPath}"/>
+        <Setter Property="Fill" Value="{StaticResource OldGoldBrush}"/>
+        <Setter Property="Stretch" Value="Uniform"/>
+        <Setter Property="Width" Value="16"/>
+        <Setter Property="Height" Value="16"/>
+    </Style>
+    
+    <!-- Frame Ornament Corner Path -->
+    <PathGeometry x:Key="FrameOrnamentCornerPath">
+        <PathFigure StartPoint="0,0" IsClosed="False">
+            <LineSegment Point="20,0"/>
+            <LineSegment Point="0,20"/>
+        </PathFigure>
+        <PathFigure StartPoint="0,0" IsClosed="True">
+            <EllipseGeometry Center="0,0" RadiusX="3" RadiusY="3"/>
+        </PathFigure>
+        <PathFigure StartPoint="8,0" IsClosed="True">
+            <EllipseGeometry Center="8,0" RadiusX="2" RadiusY="2"/>
+        </PathFigure>
+        <PathFigure StartPoint="0,8" IsClosed="True">
+            <EllipseGeometry Center="0,8" RadiusX="2" RadiusY="2"/>
+        </PathFigure>
+    </PathGeometry>
+    
+    <!-- Frame Ornament Corner Style -->
+    <Style x:Key="FrameOrnamentCornerStyle" TargetType="Path">
+        <Setter Property="Data" Value="{StaticResource FrameOrnamentCornerPath}"/>
+        <Setter Property="Stroke" Value="{StaticResource BrightGoldBrush}"/>
+        <Setter Property="Fill" Value="Transparent"/>
+        <Setter Property="StrokeThickness" Value="2"/>
+        <Setter Property="Stretch" Value="Uniform"/>
+        <Setter Property="Width" Value="50"/>
+        <Setter Property="Height" Value="50"/>
+        <Setter Property="Opacity" Value="0.8"/>
+    </Style>
+    
+    <!-- Separator Line Path -->
+    <PathGeometry x:Key="SeparatorLinePath">
+        <PathFigure StartPoint="0,5" IsClosed="False">
+            <LineSegment Point="200,5"/>
+        </PathFigure>
+        <PathFigure StartPoint="50,5" IsClosed="True">
+            <EllipseGeometry Center="50,5" RadiusX="2" RadiusY="2"/>
+        </PathFigure>
+        <PathFigure StartPoint="100,5" IsClosed="True">
+            <EllipseGeometry Center="100,5" RadiusX="2.5" RadiusY="2.5"/>
+        </PathFigure>
+        <PathFigure StartPoint="150,5" IsClosed="True">
+            <EllipseGeometry Center="150,5" RadiusX="2" RadiusY="2"/>
+        </PathFigure>
+    </PathGeometry>
+    
+    <!-- Separator Line Style -->
+    <Style x:Key="SeparatorLineStyle" TargetType="Path">
+        <Setter Property="Data" Value="{StaticResource SeparatorLinePath}"/>
+        <Setter Property="Stroke" Value="{StaticResource GoldGradientHorizontalBrush}"/>
+        <Setter Property="Fill" Value="{StaticResource BrightGoldBrush}"/>
+        <Setter Property="StrokeThickness" Value="2"/>
+        <Setter Property="Stretch" Value="Uniform"/>
+        <Setter Property="Width" Value="200"/>
+        <Setter Property="Height" Value="10"/>
+    </Style>
+    
+    <!-- Improved Status Dot Styles with better glow -->
+    <Style x:Key="StatusDotOnlineStyleEnhanced" TargetType="Ellipse" BasedOn="{StaticResource StatusDotOnlineStyle}">
+        <Setter Property="Width" Value="12"/>
+        <Setter Property="Height" Value="12"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="#00FF00" BlurRadius="5" ShadowDepth="0" Opacity="1.0"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <Style x:Key="StatusDotBusyStyleEnhanced" TargetType="Ellipse" BasedOn="{StaticResource StatusDotBusyStyle}">
+        <Setter Property="Width" Value="12"/>
+        <Setter Property="Height" Value="12"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="#FFFF00" BlurRadius="5" ShadowDepth="0" Opacity="1.0"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+</ResourceDictionary>
+
+

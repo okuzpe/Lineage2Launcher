@@ -12,3 +12,5 @@ Los siguientes archivos son placeholders y deben ser reemplazados con los assets
 
 Reemplazar estos placeholders con los archivos reales en esta carpeta.
 
+
+

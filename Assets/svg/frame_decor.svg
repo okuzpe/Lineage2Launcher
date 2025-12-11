@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- Ornamental corner decoration -->
+  <g stroke="#B8860B" stroke-width="2" fill="none" opacity="0.6">
+    <!-- Top-left corner ornament -->
+    <path d="M10 10 L30 10 M10 10 L10 30" />
+    <circle cx="10" cy="10" r="3" fill="#B8860B" opacity="0.4"/>
+    <!-- Decorative lines -->
+    <path d="M15 15 L25 25 M25 15 L15 25" stroke-width="1"/>
+  </g>
+</svg>
+
+
+

@@ -3,7 +3,7 @@
     
     <!-- Paleta Épica Fantasy - Lineage II -->
     
-    <!-- Colores Base -->
+    <!-- Colores Base - Exactos de la referencia -->
     <Color x:Key="PrimaryBlack">#0B0B0F</Color>
     <Color x:Key="MetallicGray">#1E2226</Color>
     <Color x:Key="OldGold">#B8860B</Color>
@@ -12,6 +12,8 @@
     <Color x:Key="BloodRed">#7A0B0B</Color>
     <Color x:Key="LightGray">#C0C0C0</Color>
     <Color x:Key="MediumGray">#808080</Color>
+    <Color x:Key="GoldPale">#CFC0A8</Color>
+    <Color x:Key="GreenOnline">#00FF00</Color>
     
     <!-- Brushes -->
     <SolidColorBrush x:Key="PrimaryBlackBrush" Color="{StaticResource PrimaryBlack}"/>
@@ -26,6 +28,8 @@
     <!-- Text Colors -->
     <SolidColorBrush x:Key="TextOnDarkBrush" Color="{StaticResource LightGray}"/>
     <SolidColorBrush x:Key="TextOnGoldBrush" Color="{StaticResource PrimaryBlack}"/>
+    <SolidColorBrush x:Key="GoldPaleBrush" Color="{StaticResource GoldPale}"/>
+    <SolidColorBrush x:Key="GreenOnlineBrush" Color="{StaticResource GreenOnline}"/>
     
     <!-- Status Colors -->
     <SolidColorBrush x:Key="ServerOnlineBrush" Color="#00FF00"/>
@@ -34,14 +38,57 @@
     
     <!-- Gradients -->
     <LinearGradientBrush x:Key="GoldGradientBrush" StartPoint="0,0" EndPoint="0,1">
-        <GradientStop Color="{StaticResource OldGold}" Offset="0"/>
-        <GradientStop Color="{StaticResource BrightGold}" Offset="1"/>
+        <GradientStop Color="#C8960C" Offset="0"/>
+        <GradientStop Color="#E6C87E" Offset="1"/>
     </LinearGradientBrush>
     
     <LinearGradientBrush x:Key="GoldGradientHorizontalBrush" StartPoint="0,0" EndPoint="1,0">
         <GradientStop Color="{StaticResource OldGold}" Offset="0"/>
         <GradientStop Color="{StaticResource BrightGold}" Offset="1"/>
     </LinearGradientBrush>
+    
+    <!-- Additional colors for effects -->
+    <Color x:Key="GoldShadow">#8B6914</Color>
+    <Color x:Key="RedShadow">#4A0F0F</Color>
+    <SolidColorBrush x:Key="GoldShadowBrush" Color="{StaticResource GoldShadow}"/>
+    <SolidColorBrush x:Key="RedShadowBrush" Color="{StaticResource RedShadow}"/>
+    
+    <!-- Play Button Gradient (red with subtle variation) - More vibrant -->
+    <LinearGradientBrush x:Key="PlayButtonGradientBrush" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#8B1A1A" Offset="0"/>
+        <GradientStop Color="#6C1B1B" Offset="1"/>
+    </LinearGradientBrush>
+    
+    <!-- Gold Border Gradient for Metallic Effect -->
+    <LinearGradientBrush x:Key="GoldBorderGradientBrush" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#F0D896" Offset="0"/>
+        <GradientStop Color="#B8860B" Offset="0.5"/>
+        <GradientStop Color="#9A7A0A" Offset="1"/>
+    </LinearGradientBrush>
+    
+    <!-- Gold Glow Brush for Hover Effect -->
+    <SolidColorBrush x:Key="GoldGlowBrush" Color="#B8860B"/>
+    
+    <!-- Progress Bar Fill Gradient -->
+    <LinearGradientBrush x:Key="ProgressFillGradientBrush" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="{StaticResource OldGold}" Offset="0"/>
+        <GradientStop Color="{StaticResource BrightGold}" Offset="0.5"/>
+        <GradientStop Color="{StaticResource OldGold}" Offset="1"/>
+    </LinearGradientBrush>
+    
+    <!-- Gold Border Texture Brush (will be set from code) -->
+    <ImageBrush x:Key="GoldBorderTextureBrush" 
+                Stretch="UniformToFill" 
+                Opacity="0.6"
+                TileMode="Tile"
+                Viewport="0,0,100,100"
+                ViewportUnits="Absolute"/>
+    
+    <!-- Typography Resources - Cinzel as Primary -->
+    <!-- Using absolute URI path to Fonts folder for embedded fonts -->
+    <FontFamily x:Key="EpicTitleFont">file:///./Fonts/#Cinzel</FontFamily>
+    <FontFamily x:Key="EpicSubtitleFont">file:///./Fonts/#Cinzel</FontFamily>
+    <FontFamily x:Key="UIFont">Segoe UI</FontFamily>
     
 </ResourceDictionary>
 

@@ -17,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- img folder - keep as external files for game assets (not launcher assets) -->
     <None Update="img\background.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
@@ -25,18 +26,27 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
+    <!-- Assets: Images - Embed as Resources -->
+    <Resource Include="Assets\images\*.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\images\*.jpg">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <!-- Assets: UI - Embed as Resources -->
+    <Resource Include="Assets\ui\*.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <!-- Fonts - Embed as Resources -->
+    <Resource Include="Fonts\*.ttf">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
     <!-- Excluir archivos WinForms antiguos (preservados como backup) -->
     <Compile Remove="MainForm.cs" />
     <Compile Remove="Program.cs" />
   </ItemGroup>
 
-  <Target Name="CopyImagesToPublish" AfterTargets="Publish">
-    <ItemGroup>
-      <ImagesToCopy Include="img\*.jpg;img\*.png" />
-    </ItemGroup>
-    <MakeDir Directories="$(PublishDir)img\" />
-    <Copy SourceFiles="@(ImagesToCopy)" DestinationFolder="$(PublishDir)img\" />
-  </Target>
+  <!-- Assets are now embedded as resources, no need to copy them separately -->
 
 </Project>
 

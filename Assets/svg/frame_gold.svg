@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300">
+  <!-- Golden frame with metallic relief effect -->
+  <!-- This SVG represents a decorative border frame -->
+  
+  <defs>
+    <!-- Gold gradient for metallic effect -->
+    <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#D4AF37;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#B8860B;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8B6914;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Shadow for depth -->
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="1" dy="1" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.3"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Bevel effect -->
+    <filter id="bevel">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="1"/>
+      <feOffset dx="1" dy="1" result="offset"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.5"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Main frame border (thick golden border) -->
+  <rect x="0" y="0" width="400" height="300" 
+        fill="none" 
+        stroke="url(#goldGradient)" 
+        stroke-width="8" 
+        filter="url(#shadow)"/>
+  
+  <!-- Inner border for depth -->
+  <rect x="4" y="4" width="392" height="292" 
+        fill="none" 
+        stroke="#B8860B" 
+        stroke-width="2" 
+        opacity="0.6"/>
+  
+  <!-- Corner ornaments (top-left) -->
+  <g transform="translate(20, 20)">
+    <circle cx="0" cy="0" r="4" fill="#D4AF37" opacity="0.8"/>
+    <path d="M-15,0 L15,0 M0,-15 L0,15" stroke="#B8860B" stroke-width="2"/>
+    <circle cx="-10" cy="-10" r="2" fill="#D4AF37" opacity="0.6"/>
+    <circle cx="10" cy="-10" r="2" fill="#D4AF37" opacity="0.6"/>
+    <circle cx="-10" cy="10" r="2" fill="#D4AF37" opacity="0.6"/>
+    <circle cx="10" cy="10" r="2" fill="#D4AF37" opacity="0.6"/>
+  </g>
+  
+  <!-- Corner ornaments (top-right) -->
+  <g transform="translate(380, 20)">
+    <circle cx="0" cy="0" r="4" fill="#D4AF37" opacity="0.8"/>
+    <path d="M-15,0 L15,0 M0,-15 L0,15" stroke="#B8860B" stroke-width="2"/>
+    <circle cx="-10" cy="-10" r="2" fill="#D4AF37" opacity="0.6"/>
+    <circle cx="10" cy="-10" r="2" fill="#D4AF37" opacity="0.6"/>
+    <circle cx="-10" cy="10" r="2" fill="#D4AF37" opacity="0.6"/>
+    <circle cx="10" cy="10" r="2" fill="#D4AF37" opacity="0.6"/>
+  </g>
+  
+  <!-- Corner ornaments (bottom-left) -->
+  <g transform="translate(20, 280)">
+    <circle cx="0" cy="0" r="4" fill="#D4AF37" opacity="0.8"/>
+    <path d="M-15,0 L15,0 M0,-15 L0,15" stroke="#B8860B" stroke-width="2"/>
+    <circle cx="-10" cy="-10" r="2" fill="#D4AF37" opacity="0.6"/>
+    <circle cx="10" cy="-10" r="2" fill="#D4AF37" opacity="0.6"/>
+    <circle cx="-10" cy="10" r="2" fill="#D4AF37" opacity="0.6"/>
+    <circle cx="10" cy="10" r="2" fill="#D4AF37" opacity="0.6"/>
+  </g>
+  
+  <!-- Corner ornaments (bottom-right) -->
+  <g transform="translate(380, 280)">
+    <circle cx="0" cy="0" r="4" fill="#D4AF37" opacity="0.8"/>
+    <path d="M-15,0 L15,0 M0,-15 L0,15" stroke="#B8860B" stroke-width="2"/>
+    <circle cx="-10" cy="-10" r="2" fill="#D4AF37" opacity="0.6"/>
+    <circle cx="10" cy="-10" r="2" fill="#D4AF37" opacity="0.6"/>
+    <circle cx="-10" cy="10" r="2" fill="#D4AF37" opacity="0.6"/>
+    <circle cx="10" cy="10" r="2" fill="#D4AF37" opacity="0.6"/>
+  </g>
+</svg>
+
+

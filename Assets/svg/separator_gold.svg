@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 10" width="200" height="10">
+  <!-- Gold separator line for decorative use -->
+  <defs>
+    <linearGradient id="separatorGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#B8860B;stop-opacity:0" />
+      <stop offset="20%" style="stop-color:#B8860B;stop-opacity:0.8" />
+      <stop offset="50%" style="stop-color:#D4AF37;stop-opacity:1" />
+      <stop offset="80%" style="stop-color:#B8860B;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#B8860B;stop-opacity:0" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Main separator line -->
+  <line x1="0" y1="5" x2="200" y2="5" 
+        stroke="url(#separatorGradient)" 
+        stroke-width="2"/>
+  
+  <!-- Decorative dots -->
+  <circle cx="50" cy="5" r="2" fill="#D4AF37" opacity="0.6"/>
+  <circle cx="100" cy="5" r="2.5" fill="#D4AF37" opacity="0.8"/>
+  <circle cx="150" cy="5" r="2" fill="#D4AF37" opacity="0.6"/>
+</svg>
+
+

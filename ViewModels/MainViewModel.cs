@@ -38,6 +38,7 @@ namespace Lineage2Launcher.ViewModels
 
         public ObservableCollection<ServerViewModel> Servers { get; } = new();
         public ObservableCollection<NewsItem> News { get; } = new();
+        public ServerRatesViewModel ServerRates { get; } = new();
 
         public int Progress
         {
@@ -102,6 +103,9 @@ namespace Lineage2Launcher.ViewModels
         public ICommand PlayCommand { get; }
         public ICommand PauseCommand { get; }
         public ICommand ResumeCommand { get; }
+        public ICommand OpenSupportCommand { get; }
+        public ICommand OpenForumCommand { get; }
+        public ICommand OpenDiscordCommand { get; }
 
         public MainViewModel()
         {
@@ -112,6 +116,9 @@ namespace Lineage2Launcher.ViewModels
             PlayCommand = new RelayCommand(async () => await HandlePlayAction(), () => IsPlayEnabled);
             PauseCommand = new RelayCommand(() => { _isDownloadPaused = true; CurrentButtonState = ButtonState.Paused; AddLog("Download paused by user."); });
             ResumeCommand = new RelayCommand(() => { _isDownloadPaused = false; CurrentButtonState = ButtonState.Downloading; AddLog("Download resumed by user."); });
+            OpenSupportCommand = new RelayCommand(() => System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = "https://support.example.com", UseShellExecute = true }));
+            OpenForumCommand = new RelayCommand(() => System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = "https://forum.example.com", UseShellExecute = true }));
+            OpenDiscordCommand = new RelayCommand(() => System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = "https://discord.gg/example", UseShellExecute = true }));
             
             // Auto-start verification
             _ = StartAutoVerification();
@@ -204,8 +211,8 @@ namespace Lineage2Launcher.ViewModels
         {
             try
             {
-                string exePath = System.Reflection.Assembly.GetExecutingAssembly().Location;
-                string exeDir = Path.GetDirectoryName(exePath) ?? Environment.CurrentDirectory;
+                // Use AppContext.BaseDirectory for single-file apps compatibility
+                string exeDir = AppContext.BaseDirectory ?? Environment.CurrentDirectory;
                 
                 string? configPath = FindConfigFile();
                 
@@ -249,8 +256,8 @@ namespace Lineage2Launcher.ViewModels
 
         private string? FindConfigFile()
         {
-            string exePath = System.Reflection.Assembly.GetExecutingAssembly().Location;
-            string exeDir = Path.GetDirectoryName(exePath) ?? string.Empty;
+            // Use AppContext.BaseDirectory for single-file apps compatibility
+            string exeDir = AppContext.BaseDirectory ?? string.Empty;
             string configInExeDir = Path.Combine(exeDir, "config.json");
             if (File.Exists(configInExeDir))
                 return configInExeDir;
