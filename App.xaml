@@ -1,4 +1,4 @@
-<Application x:Class="Lineage2Launcher.App"
+<Application x:Class="L2TitanLauncher.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              StartupUri="MainWindow.xaml">

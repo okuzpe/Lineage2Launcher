@@ -85,8 +85,8 @@ Abre `config.json` y configura los siguientes parámetros:
 ```json
 {
   "GamePath": "C:\\Program Files\\Lineage2",
-  "ServerUrl": "http://tu-servidor.com/lineage2",
-  "ManifestUrl": "http://tu-servidor.com/lineage2/manifest.json",
+  "ServerUrl": "https://tu-servidor.com/lineage2",
+  "ManifestUrl": "https://tu-servidor.com/lineage2/manifest.json",
   "GameExecutable": "l2.exe",
   "GameParameters": ""
 }
@@ -97,8 +97,8 @@ Abre `config.json` y configura los siguientes parámetros:
 | Parámetro | Descripción | Ejemplo | Requerido |
 |-----------|-------------|---------|-----------|
 | `GamePath` | Ruta completa donde se instalará el juego | `"C:\\Program Files\\Lineage2"` | ✅ Sí |
-| `ServerUrl` | URL base de tu servidor (sin barra final) | `"http://servidor.com/lineage2"` | ✅ Sí |
-| `ManifestUrl` | URL completa del archivo manifest.json | `"http://servidor.com/lineage2/manifest.json"` | ✅ Sí |
+| `ServerUrl` | URL base de tu servidor (sin barra final) | `"https://servidor.com/lineage2"` | ✅ Sí |
+| `ManifestUrl` | URL completa del archivo manifest.json | `"https://servidor.com/lineage2/manifest.json"` | ✅ Sí |
 | `GameExecutable` | Nombre del ejecutable del juego | `"l2.exe"` | ✅ Sí |
 | `GameParameters` | Parámetros adicionales para el juego (opcional) | `"-window"` o `""` | ❌ No |
 
@@ -108,8 +108,8 @@ Abre `config.json` y configura los siguientes parámetros:
 ```json
 {
   "GamePath": "C:\\Games\\Lineage2",
-  "ServerUrl": "http://mi-servidor.com/l2",
-  "ManifestUrl": "http://mi-servidor.com/l2/manifest.json",
+  "ServerUrl": "https://mi-servidor.com/l2",
+  "ManifestUrl": "https://mi-servidor.com/l2/manifest.json",
   "GameExecutable": "l2.exe",
   "GameParameters": ""
 }
@@ -382,7 +382,7 @@ scp manifest.json usuario@servidor.com:/var/www/lineage2/manifest.json
 
 Verifica que sea accesible:
 ```bash
-curl http://tu-servidor.com/lineage2/manifest.json
+curl https://tu-servidor.com/lineage2/manifest.json
 ```
 
 ### 3. Subida de Archivos del Cliente
@@ -404,8 +404,8 @@ Verifica que todos los archivos sean accesibles vía HTTP. Puedes probar algunos
 
 ```bash
 # Probar algunos archivos del manifest
-curl -I http://tu-servidor.com/lineage2/system/L2.exe
-curl -I http://tu-servidor.com/lineage2/textures/algunatextura.bmp
+curl -I https://tu-servidor.com/lineage2/system/L2.exe
+curl -I https://tu-servidor.com/lineage2/textures/algunatextura.bmp
 ```
 
 **Importante:**
@@ -423,8 +423,8 @@ Compila el launcher con la configuración ya incluida. Modifica el código antes
 
 1. **Edita `MainForm.cs`** y cambia los valores por defecto en `LoadConfiguration()`:
    ```csharp
-   serverUrl = "http://tu-servidor.com/lineage2";
-   manifestUrl = "http://tu-servidor.com/lineage2/manifest.json";
+   serverUrl = "https://tu-servidor.com/lineage2";
+   manifestUrl = "https://tu-servidor.com/lineage2/manifest.json";
    ```
 
 2. O crea un `config.json` junto al ejecutable con la configuración correcta.
@@ -520,17 +520,17 @@ Antes de distribuir, verifica que todo funcione:
 
 - [ ] Servidor accesible públicamente
   ```bash
-  curl http://tu-servidor.com/lineage2/manifest.json
+  curl https://tu-servidor.com/lineage2/manifest.json
   ```
 
 - [ ] Manifest descargable y válido
   ```bash
-  curl http://tu-servidor.com/lineage2/manifest.json | python -m json.tool
+  curl https://tu-servidor.com/lineage2/manifest.json | python -m json.tool
   ```
 
 - [ ] Archivos accesibles (prueba algunos aleatorios)
   ```bash
-  curl -I http://tu-servidor.com/lineage2/system/L2.exe
+  curl -I https://tu-servidor.com/lineage2/system/L2.exe
   ```
 
 - [ ] Launcher se conecta correctamente
@@ -663,7 +663,7 @@ El log muestra información detallada con el siguiente formato:
 **Ejemplos:**
 ```
 [14:23:15] Conectando al servidor...
-[14:23:16] Descargando manifest desde: http://servidor.com/manifest.json
+[14:23:16] Descargando manifest desde: https://servidor.com/manifest.json
 [14:23:17] Se encontraron 1523 archivos en el manifest.
 [14:23:18] ✓ system\l2.exe - OK
 [14:23:19] Archivo corrupto o desactualizado: system\L2.ini
@@ -907,7 +907,7 @@ El sistema utiliza **MD5** para verificar la integridad de los archivos:
 Tu servidor web debe tener la siguiente estructura para que el launcher funcione correctamente:
 
 ```
-http://tu-servidor.com/lineage2/
+https://tu-servidor.com/lineage2/
 ├── manifest.json          ← Archivo manifest (requerido)
 ├── system/
 │   ├── l2.exe            ← Ejecutable principal
@@ -1278,6 +1278,58 @@ El proyecto utiliza las siguientes dependencias NuGet:
 - **Newtonsoft.Json** (v13.0.3): Para serialización/deserialización JSON
 
 Estas se restauran automáticamente al compilar.
+
+## 🔏 Firma de Código (Code Signing)
+
+La firma del ejecutable con un certificado Authenticode es la forma más efectiva de evitar falsos positivos de antivirus y advertencias de Windows SmartScreen.
+
+### ¿Por qué firmar?
+
+- **SmartScreen**: Sin firma, Windows mostrará una advertencia "Windows protegió su equipo" cada vez que un usuario ejecute el launcher.
+- **Antivirus**: Los ejecutables firmados con certificados de confianza rara vez son marcados como malware.
+- **Reputación**: La reputación se acumula sobre el certificado. Cuantas más descargas, menos advertencias.
+
+### Opciones de Certificado
+
+| Opción | Coste | Efectividad | Notas |
+|--------|-------|-------------|-------|
+| **EV Code Signing** (DigiCert, Sectigo) | ~$300-500/año | Máxima | Elimina SmartScreen inmediatamente. Requiere token USB. |
+| **Standard Code Signing** (Sectigo, Comodo) | ~$70-200/año | Alta | SmartScreen desaparece después de algunas descargas. |
+| **SignPath.io** | Gratis (open source) | Alta | Requiere que el proyecto sea open source. |
+| **Certificado auto-firmado** | Gratis | Baja | Útil solo para pruebas internas. No elimina SmartScreen. |
+
+### Cómo firmar el ejecutable
+
+#### Paso 1: Obtener un certificado
+
+Compra un certificado de firma de código de un proveedor reconocido (DigiCert, Sectigo, GlobalSign).
+
+#### Paso 2: Firmar con signtool
+
+Después de compilar el ejecutable:
+
+```bash
+# Firma con certificado desde archivo .pfx
+signtool sign /f "MiCertificado.pfx" /p "password" /fd sha256 /tr http://timestamp.digicert.com /td sha256 "bin\Release\net10.0-windows\win-x64\publish\L2TitanLauncher.exe"
+
+# Firma con certificado en token USB (EV)
+signtool sign /n "L2Titan" /fd sha256 /tr http://timestamp.digicert.com /td sha256 "bin\Release\net10.0-windows\win-x64\publish\L2TitanLauncher.exe"
+```
+
+#### Paso 3: Verificar la firma
+
+```bash
+signtool verify /pa "L2TitanLauncher.exe"
+```
+
+### Integración con el proceso de build
+
+Puedes automatizar la firma en el script `publish-release.sh`:
+
+```bash
+# Después de dotnet publish, firmar el exe
+signtool sign /n "L2Titan" /fd sha256 /tr http://timestamp.digicert.com /td sha256 "$PUBLISH_DIR/L2TitanLauncher.exe"
+```
 
 ## 🤝 Contribuir
 

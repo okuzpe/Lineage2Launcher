@@ -1,769 +1,308 @@
-<Window x:Class="Lineage2Launcher.MainWindow"
+<Window x:Class="L2TitanLauncher.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:vm="clr-namespace:Lineage2Launcher.ViewModels"
+        xmlns:vm="clr-namespace:L2TitanLauncher.ViewModels"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         mc:Ignorable="d"
-        Title="Lineage 2 Launcher - L2Titan" 
-        Height="680" 
-        Width="1024"
+        Title="Launcher l2Titan"
+        Height="760"
+        Width="1280"
         WindowStyle="None"
-        AllowsTransparency="True"
-        Background="Transparent"
+        Background="#0D0D12"
         ResizeMode="CanResize">
-    <Window.Resources>
-        <vm:MainViewModel x:Key="ViewModel"/>
-        <!-- Logo Entrance Animation - Gold Sweep -->
-        <Storyboard x:Key="LogoEntranceAnimation">
-            <DoubleAnimation Storyboard.TargetName="TitleText"
-                           Storyboard.TargetProperty="Opacity"
-                           From="0" To="1" Duration="0:0:0.6"/>
-            <DoubleAnimation Storyboard.TargetName="TitleText"
-                           Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
-                           From="-20" To="0" Duration="0:0:0.6">
-                <DoubleAnimation.EasingFunction>
-                    <CubicEase EasingMode="EaseOut"/>
-                </DoubleAnimation.EasingFunction>
-            </DoubleAnimation>
-        </Storyboard>
-    </Window.Resources>
+
+    <!-- WindowChrome: let the OS manage resize borders + maximize work-area clamping.
+         CaptionHeight=0 keeps the existing Header_MouseDown/DragMove drag behavior intact. -->
+    <shell:WindowChrome.WindowChrome>
+        <shell:WindowChrome GlassFrameThickness="0"
+                            ResizeBorderThickness="6"
+                            CaptionHeight="0"
+                            CornerRadius="0"
+                            UseAeroCaptionButtons="False"/>
+    </shell:WindowChrome.WindowChrome>
+
     <Window.DataContext>
         <vm:MainViewModel/>
     </Window.DataContext>
+
     <Window.Triggers>
-        <!-- Window Fade-In Animation -->
+        <!-- Window Entrance: fade + slide up -->
         <EventTrigger RoutedEvent="Window.Loaded">
             <BeginStoryboard>
                 <Storyboard>
                     <DoubleAnimation Storyboard.TargetProperty="Opacity"
-                                     From="0" To="1" Duration="0:0:0.4"/>
+                                     From="0" To="1" Duration="0:0:0.5"/>
+                    <DoubleAnimation Storyboard.TargetName="MainBorder"
+                                     Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                     From="24" To="0" Duration="0:0:0.5">
+                        <DoubleAnimation.EasingFunction>
+                            <CubicEase EasingMode="EaseOut"/>
+                        </DoubleAnimation.EasingFunction>
+                    </DoubleAnimation>
                 </Storyboard>
             </BeginStoryboard>
         </EventTrigger>
     </Window.Triggers>
-    
-    <Border x:Name="MainBorder" Style="{StaticResource WindowFrameStyle}"
-            RenderOptions.BitmapScalingMode="HighQuality"
-            RenderOptions.EdgeMode="Unspecified">
-        <Grid RenderOptions.BitmapScalingMode="HighQuality">
+
+    <Border x:Name="MainBorder"
+            Style="{StaticResource WindowFrameStyle}"
+            ClipToBounds="True"
+            RenderOptions.BitmapScalingMode="HighQuality">
+        <Border.RenderTransform>
+            <TranslateTransform Y="0"/>
+        </Border.RenderTransform>
+
+        <!-- ROOT GRID: TopBar / Hero / ActionBar -->
+        <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="56"/>    <!-- TopBar -->
+                <RowDefinition Height="*"/>     <!-- Hero: background + WebView2 -->
+                <RowDefinition Height="96"/>    <!-- ActionBar -->
             </Grid.RowDefinitions>
-            
-            <!-- Header: L2TITAN Title - Professional Design -->
-            <Grid Grid.Row="0" Background="{StaticResource PrimaryBlackBrush}" MouseDown="Header_MouseDown">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                
-                <!-- Decorative top border -->
-                <Border Grid.ColumnSpan="2" 
-                        Height="2" 
-                        VerticalAlignment="Top"
-                        Background="{StaticResource GoldGradientBrush}"
-                        Opacity="0.6"/>
-                
-                <StackPanel Grid.Column="0" HorizontalAlignment="Center" Margin="0,25,0,25">
-                    <TextBlock x:Name="TitleText" Text="L2TITAN"
+
+            <!-- ================================================ -->
+            <!-- LAYER 0: BACKGROUND IMAGE (spans all rows)       -->
+            <!-- ================================================ -->
+            <Grid Grid.Row="0" Grid.RowSpan="3" IsHitTestVisible="False">
+                <Image x:Name="BackgroundImage"
+                       Source="pack://application:,,,/Assets/images/background.png"
+                       Stretch="UniformToFill"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Opacity="0.85">
+                    <Image.Style>
+                        <Style TargetType="Image">
+                            <Style.Triggers>
+                                <Trigger Property="Source" Value="{x:Null}">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Image.Style>
+                </Image>
+                <!-- Top vignette — TopBar readability -->
+                <Rectangle VerticalAlignment="Top" Height="80">
+                    <Rectangle.Fill>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="#E00D0D12" Offset="0"/>
+                            <GradientStop Color="#000D0D12" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Rectangle.Fill>
+                </Rectangle>
+                <!-- Bottom vignette — ActionBar readability -->
+                <Rectangle VerticalAlignment="Bottom" Height="130">
+                    <Rectangle.Fill>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="#000D0D12" Offset="0"/>
+                            <GradientStop Color="#F50D0D12" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Rectangle.Fill>
+                </Rectangle>
+            </Grid>
+
+            <!-- ================================================ -->
+            <!-- ROW 0: TOP BAR                                    -->
+            <!-- ================================================ -->
+            <Border Grid.Row="0"
+                    Style="{StaticResource TopBarStyle}"
+                    MouseDown="Header_MouseDown">
+                <Grid Margin="24,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>   <!-- Logo -->
+                        <ColumnDefinition Width="*"/>      <!-- Spacer -->
+                        <ColumnDefinition Width="Auto"/>   <!-- Links + controls -->
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Logo -->
+                    <TextBlock Grid.Column="0"
+                               Text="Launcher l2Titan"
                                FontFamily="{StaticResource EpicTitleFont}"
-                               FontSize="52"
+                               FontSize="20"
                                FontWeight="Bold"
                                Foreground="{StaticResource BrightGoldBrush}"
-                               HorizontalAlignment="Center"
-                               Opacity="0"
-                               TextOptions.TextFormattingMode="Ideal"
-                               TextOptions.TextRenderingMode="ClearType"
-                               UseLayoutRounding="True"
-                               RenderOptions.ClearTypeHint="Enabled"
-                               RenderOptions.BitmapScalingMode="HighQuality">
-                        <!-- Enhanced emboss effect -->
+                               VerticalAlignment="Center"
+                               Margin="0,0,32,0"
+                               Style="{StaticResource BaseTextStyle}">
                         <TextBlock.Effect>
-                            <DropShadowEffect Color="#000000" BlurRadius="1" ShadowDepth="0.5" Opacity="0.2" Direction="225"/>
+                            <DropShadowEffect Color="#C9A84C" BlurRadius="8" ShadowDepth="0" Opacity="0.35"/>
                         </TextBlock.Effect>
-                        <TextBlock.RenderTransform>
-                            <TranslateTransform Y="-20"/>
-                        </TextBlock.RenderTransform>
-                        <TextBlock.Triggers>
-                            <EventTrigger RoutedEvent="Loaded">
-                                <BeginStoryboard Storyboard="{StaticResource LogoEntranceAnimation}"/>
-                            </EventTrigger>
-                        </TextBlock.Triggers>
                     </TextBlock>
-                    
-                    <!-- Decorative separator line -->
-                    <Border Height="1" 
-                            Width="200" 
-                            HorizontalAlignment="Center"
-                            Margin="0,8,0,8"
-                            Background="{StaticResource GoldGradientBrush}"
-                            Opacity="0.4"/>
-                    
-                    <TextBlock Text="LAUNCHER v.1.0.0"
-                               FontFamily="{StaticResource EpicSubtitleFont}"
-                               FontSize="13"
-                               Foreground="{StaticResource GoldPaleBrush}"
-                               HorizontalAlignment="Center"
-                               Margin="0,2,0,0"
-                               TextOptions.TextFormattingMode="Ideal"
-                               TextOptions.TextRenderingMode="ClearType"
-                               UseLayoutRounding="True"
-                               RenderOptions.ClearTypeHint="Enabled"
-                               RenderOptions.BitmapScalingMode="HighQuality"/>
-                </StackPanel>
-                
-                <!-- Window Control Buttons -->
-                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="8,8,8,0" VerticalAlignment="Top">
-                    <Button x:Name="MinimizeButton"
-                            Content="─"
-                            Style="{StaticResource WindowControlButtonStyle}"
-                            Click="MinimizeButton_Click"
-                            Width="32"
-                            Height="32"
-                            Margin="0,0,3,0"/>
-                    <Button x:Name="CloseButton"
-                            Content="✕"
-                            Style="{StaticResource WindowControlButtonStyle}"
-                            Click="CloseButton_Click"
-                            Width="32"
-                            Height="32"/>
-                </StackPanel>
-            </Grid>
 
-            <!-- Main Content Area -->
-            <Grid Grid.Row="1">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="250"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
+                    <!-- Right: Web + Discord + Rates + version + window controls -->
+                    <StackPanel Grid.Column="2"
+                                Orientation="Horizontal"
+                                VerticalAlignment="Center">
 
-                <!-- Left Column: Servers -->
-                <Border x:Name="LeftColumnBorder"
-                        Grid.Column="0" 
-                        Background="{StaticResource MetallicGrayBrush}"
-                        BorderBrush="{StaticResource GoldGradientBrush}"
-                        BorderThickness="0,0,4,0">
-                    <Border.Effect>
-                        <DropShadowEffect Color="{StaticResource OldGold}" 
-                                          BlurRadius="3" 
-                                          ShadowDepth="1" 
-                                          Opacity="0.5"
-                                          Direction="90"/>
-                    </Border.Effect>
-                    <Grid>
-                        <!-- Server Rates - Professional Panel -->
-                        <Border x:Name="ServerRatesBorder"
-                                BorderBrush="{StaticResource GoldGradientBrush}"
-                                BorderThickness="3"
-                                Background="{StaticResource MetallicGrayBrush}"
-                                Margin="15,15,15,15"
-                                Padding="15"
-                                CornerRadius="4"
-                                RenderOptions.BitmapScalingMode="HighQuality"
-                                RenderOptions.EdgeMode="Unspecified">
-                            <Border.Effect>
-                                <DropShadowEffect Color="#000000" 
-                                                  BlurRadius="4" 
-                                                  ShadowDepth="1" 
-                                                  Opacity="0.5"
-                                                  Direction="135"/>
-                            </Border.Effect>
-                            <StackPanel>
-                                    <!-- Section Header with decorative elements -->
-                                    <Grid Margin="0,0,0,15">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-                                        
-                                        <!-- Left decorative line -->
-                                        <Border Grid.Column="0" 
-                                                Height="1" 
-                                                VerticalAlignment="Center"
-                                                Margin="0,0,10,0"
-                                                Background="{StaticResource GoldGradientBrush}"
-                                                Opacity="0.3"/>
-                                        
-                                        <!-- Title -->
-                                        <TextBlock Grid.Column="1"
-                                                   Text="RATES"
-                                                   FontFamily="{StaticResource EpicTitleFont}"
-                                                   FontSize="22"
-                                                   FontWeight="Bold"
-                                                   Foreground="{StaticResource BrightGoldBrush}"
-                                                   HorizontalAlignment="Center"
-                                                   TextOptions.TextFormattingMode="Ideal"
-                                                   TextOptions.TextRenderingMode="ClearType"
-                                                   UseLayoutRounding="True"
-                                                   RenderOptions.ClearTypeHint="Enabled"
-                                                   RenderOptions.BitmapScalingMode="HighQuality">
-                                            <TextBlock.Effect>
-                                                <DropShadowEffect Color="#000000" BlurRadius="1" ShadowDepth="0.5" Opacity="0.2"/>
-                                            </TextBlock.Effect>
-                                        </TextBlock>
-                                        
-                                        <!-- Right decorative line -->
-                                        <Border Grid.Column="2" 
-                                                Height="1" 
-                                                VerticalAlignment="Center"
-                                                Margin="10,0,0,0"
-                                                Background="{StaticResource GoldGradientBrush}"
-                                                Opacity="0.3"/>
-                                    </Grid>
-                                    
-                                    <!-- Experience (XP) - Enhanced -->
-                                    <Grid Margin="0,6">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0"
-                                                   Text="Experiencia (XP)"
-                                                   Foreground="{StaticResource GoldPaleBrush}"
-                                                   FontSize="13"
-                                                   FontWeight="SemiBold"
-                                                   VerticalAlignment="Center"
-                                                   TextOptions.TextFormattingMode="Ideal"
-                                                   RenderOptions.ClearTypeHint="Enabled"
-                                                   RenderOptions.BitmapScalingMode="HighQuality"
-                                                   TextOptions.TextRenderingMode="ClearType"
-                                                   UseLayoutRounding="True"/>
-                                        <TextBlock Grid.Column="1"
-                                                   Text="{Binding ServerRates.ExperienceRate, StringFormat='x{0}'}"
-                                                   Foreground="{StaticResource BrightGoldBrush}"
-                                                   FontSize="14"
-                                                   FontWeight="Bold"
-                                                   VerticalAlignment="Center"
-                                                   Margin="5,0,0,0"
-                                                   TextOptions.TextFormattingMode="Ideal"
-                                                   TextOptions.TextRenderingMode="ClearType"
-                                                   UseLayoutRounding="True"
-                                                   RenderOptions.ClearTypeHint="Enabled"
-                                                   RenderOptions.BitmapScalingMode="HighQuality">
-                                            <TextBlock.Effect>
-                                                <DropShadowEffect Color="#B8860B" BlurRadius="2" ShadowDepth="0" Opacity="0.4"/>
-                                            </TextBlock.Effect>
-                                        </TextBlock>
-                                    </Grid>
-                                    
-                                    <!-- Subtle separator -->
-                                    <Border Height="1" 
-                                            Margin="0,4,0,4"
-                                            Background="{StaticResource OldGoldBrush}"
-                                            Opacity="0.15"/>
-                                    
-                                    <!-- Skill Points (SP) -->
-                                    <Grid Margin="0,6">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0"
-                                                   Text="Skill Points (SP)"
-                                                   Foreground="{StaticResource GoldPaleBrush}"
-                                                   FontSize="13"
-                                                   FontWeight="SemiBold"
-                                                   VerticalAlignment="Center"
-                                                   TextOptions.TextFormattingMode="Ideal"
-                                                   RenderOptions.ClearTypeHint="Enabled"
-                                                   RenderOptions.BitmapScalingMode="HighQuality"
-                                                   TextOptions.TextRenderingMode="ClearType"
-                                                   UseLayoutRounding="True"/>
-                                        <TextBlock Grid.Column="1"
-                                                   Text="{Binding ServerRates.SkillPointsRate, StringFormat='x{0}'}"
-                                                   Foreground="{StaticResource BrightGoldBrush}"
-                                                   FontSize="14"
-                                                   FontWeight="Bold"
-                                                   VerticalAlignment="Center"
-                                                   Margin="5,0,0,0"
-                                                   TextOptions.TextFormattingMode="Ideal"
-                                                   RenderOptions.ClearTypeHint="Enabled"
-                                                   RenderOptions.BitmapScalingMode="HighQuality"
-                                                   TextOptions.TextRenderingMode="ClearType"
-                                                   UseLayoutRounding="True">
-                                            <TextBlock.Effect>
-                                                <DropShadowEffect Color="#B8860B" BlurRadius="2" ShadowDepth="0" Opacity="0.4"/>
-                                            </TextBlock.Effect>
-                                        </TextBlock>
-                                    </Grid>
-                                    <Border Height="1" Margin="0,4,0,4" Background="{StaticResource OldGoldBrush}" Opacity="0.15"/>
-                                    
-                                    <!-- Party XP -->
-                                    <Grid Margin="0,6">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0"
-                                                   Text="Party XP"
-                                                   Foreground="{StaticResource GoldPaleBrush}"
-                                                   FontSize="13"
-                                                   FontWeight="SemiBold"
-                                                   VerticalAlignment="Center"
-                                                   TextOptions.TextFormattingMode="Ideal"
-                                                   RenderOptions.ClearTypeHint="Enabled"
-                                                   RenderOptions.BitmapScalingMode="HighQuality"
-                                                   TextOptions.TextRenderingMode="ClearType"
-                                                   UseLayoutRounding="True"/>
-                                        <TextBlock Grid.Column="1"
-                                                   Text="{Binding ServerRates.PartyXpRate, StringFormat='x{0}'}"
-                                                   Foreground="{StaticResource BrightGoldBrush}"
-                                                   FontSize="14"
-                                                   FontWeight="Bold"
-                                                   VerticalAlignment="Center"
-                                                   Margin="5,0,0,0"
-                                                   TextOptions.TextFormattingMode="Ideal"
-                                                   RenderOptions.ClearTypeHint="Enabled"
-                                                   RenderOptions.BitmapScalingMode="HighQuality"
-                                                   TextOptions.TextRenderingMode="ClearType"
-                                                   UseLayoutRounding="True">
-                                            <TextBlock.Effect>
-                                                <DropShadowEffect Color="#B8860B" BlurRadius="2" ShadowDepth="0" Opacity="0.4"/>
-                                            </TextBlock.Effect>
-                                        </TextBlock>
-                                    </Grid>
-                                    <Border Height="1" Margin="0,4,0,4" Background="{StaticResource OldGoldBrush}" Opacity="0.15"/>
-                                    
-                                    <!-- Party SP -->
-                                    <Grid Margin="0,6">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0"
-                                                   Text="Party SP"
-                                                   Foreground="{StaticResource GoldPaleBrush}"
-                                                   FontSize="13"
-                                                   FontWeight="SemiBold"
-                                                   VerticalAlignment="Center"
-                                                   TextOptions.TextFormattingMode="Ideal"
-                                                   RenderOptions.ClearTypeHint="Enabled"
-                                                   RenderOptions.BitmapScalingMode="HighQuality"
-                                                   TextOptions.TextRenderingMode="ClearType"
-                                                   UseLayoutRounding="True"/>
-                                        <TextBlock Grid.Column="1"
-                                                   Text="{Binding ServerRates.PartySpRate, StringFormat='x{0}'}"
-                                                   Foreground="{StaticResource BrightGoldBrush}"
-                                                   FontSize="14"
-                                                   FontWeight="Bold"
-                                                   VerticalAlignment="Center"
-                                                   Margin="5,0,0,0"
-                                                   TextOptions.TextFormattingMode="Ideal"
-                                                   RenderOptions.ClearTypeHint="Enabled"
-                                                   RenderOptions.BitmapScalingMode="HighQuality"
-                                                   TextOptions.TextRenderingMode="ClearType"
-                                                   UseLayoutRounding="True">
-                                            <TextBlock.Effect>
-                                                <DropShadowEffect Color="#B8860B" BlurRadius="2" ShadowDepth="0" Opacity="0.4"/>
-                                            </TextBlock.Effect>
-                                        </TextBlock>
-                                    </Grid>
-                                    <Border Height="1" Margin="0,4,0,4" Background="{StaticResource OldGoldBrush}" Opacity="0.15"/>
-                                    
-                                    <!-- Adena -->
-                                    <Grid Margin="0,6">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0"
-                                                   Text="Adena"
-                                                   Foreground="{StaticResource GoldPaleBrush}"
-                                                   FontSize="13"
-                                                   FontWeight="SemiBold"
-                                                   VerticalAlignment="Center"
-                                                   TextOptions.TextFormattingMode="Ideal"
-                                                   RenderOptions.ClearTypeHint="Enabled"
-                                                   RenderOptions.BitmapScalingMode="HighQuality"
-                                                   TextOptions.TextRenderingMode="ClearType"
-                                                   UseLayoutRounding="True"/>
-                                        <TextBlock Grid.Column="1"
-                                                   Text="{Binding ServerRates.AdenaRate, StringFormat='x{0}'}"
-                                                   Foreground="{StaticResource BrightGoldBrush}"
-                                                   FontSize="14"
-                                                   FontWeight="Bold"
-                                                   VerticalAlignment="Center"
-                                                   Margin="5,0,0,0"
-                                                   TextOptions.TextFormattingMode="Ideal"
-                                                   RenderOptions.ClearTypeHint="Enabled"
-                                                   RenderOptions.BitmapScalingMode="HighQuality"
-                                                   TextOptions.TextRenderingMode="ClearType"
-                                                   UseLayoutRounding="True">
-                                            <TextBlock.Effect>
-                                                <DropShadowEffect Color="#B8860B" BlurRadius="2" ShadowDepth="0" Opacity="0.4"/>
-                                            </TextBlock.Effect>
-                                        </TextBlock>
-                                    </Grid>
-                                    <Border Height="1" Margin="0,4,0,4" Background="{StaticResource OldGoldBrush}" Opacity="0.15"/>
-                                    
-                                    <!-- Drop Items -->
-                                    <Grid Margin="0,6">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0"
-                                                   Text="Drop Items"
-                                                   Foreground="{StaticResource GoldPaleBrush}"
-                                                   FontSize="13"
-                                                   FontWeight="SemiBold"
-                                                   VerticalAlignment="Center"
-                                                   TextOptions.TextFormattingMode="Ideal"
-                                                   RenderOptions.ClearTypeHint="Enabled"
-                                                   RenderOptions.BitmapScalingMode="HighQuality"
-                                                   TextOptions.TextRenderingMode="ClearType"
-                                                   UseLayoutRounding="True"/>
-                                        <TextBlock Grid.Column="1"
-                                                   Text="{Binding ServerRates.DropItemsRate, StringFormat='x{0}'}"
-                                                   Foreground="{StaticResource BrightGoldBrush}"
-                                                   FontSize="14"
-                                                   FontWeight="Bold"
-                                                   VerticalAlignment="Center"
-                                                   Margin="5,0,0,0"
-                                                   TextOptions.TextFormattingMode="Ideal"
-                                                   RenderOptions.ClearTypeHint="Enabled"
-                                                   RenderOptions.BitmapScalingMode="HighQuality"
-                                                   TextOptions.TextRenderingMode="ClearType"
-                                                   UseLayoutRounding="True">
-                                            <TextBlock.Effect>
-                                                <DropShadowEffect Color="#B8860B" BlurRadius="2" ShadowDepth="0" Opacity="0.4"/>
-                                            </TextBlock.Effect>
-                                        </TextBlock>
-                                    </Grid>
-                                    <Border Height="1" Margin="0,4,0,4" Background="{StaticResource OldGoldBrush}" Opacity="0.15"/>
-                                    
-                                    <!-- Spoil -->
-                                    <Grid Margin="0,6">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0"
-                                                   Text="Spoil"
-                                                   Foreground="{StaticResource GoldPaleBrush}"
-                                                   FontSize="13"
-                                                   FontWeight="SemiBold"
-                                                   VerticalAlignment="Center"
-                                                   TextOptions.TextFormattingMode="Ideal"
-                                                   RenderOptions.ClearTypeHint="Enabled"
-                                                   RenderOptions.BitmapScalingMode="HighQuality"
-                                                   TextOptions.TextRenderingMode="ClearType"
-                                                   UseLayoutRounding="True"/>
-                                        <TextBlock Grid.Column="1"
-                                                   Text="{Binding ServerRates.SpoilRate, StringFormat='x{0}'}"
-                                                   Foreground="{StaticResource BrightGoldBrush}"
-                                                   FontSize="14"
-                                                   FontWeight="Bold"
-                                                   VerticalAlignment="Center"
-                                                   Margin="5,0,0,0"
-                                                   TextOptions.TextFormattingMode="Ideal"
-                                                   RenderOptions.ClearTypeHint="Enabled"
-                                                   RenderOptions.BitmapScalingMode="HighQuality"
-                                                   TextOptions.TextRenderingMode="ClearType"
-                                                   UseLayoutRounding="True">
-                                            <TextBlock.Effect>
-                                                <DropShadowEffect Color="#B8860B" BlurRadius="2" ShadowDepth="0" Opacity="0.4"/>
-                                            </TextBlock.Effect>
-                                        </TextBlock>
-                                    </Grid>
-                                    <Border Height="1" Margin="0,4,0,4" Background="{StaticResource OldGoldBrush}" Opacity="0.15"/>
-                                    
-                                    <!-- Seal Stones -->
-                                    <Grid Margin="0,6">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0"
-                                                   Text="Seal Stones"
-                                                   Foreground="{StaticResource GoldPaleBrush}"
-                                                   FontSize="13"
-                                                   FontWeight="SemiBold"
-                                                   VerticalAlignment="Center"
-                                                   TextOptions.TextFormattingMode="Ideal"
-                                                   RenderOptions.ClearTypeHint="Enabled"
-                                                   RenderOptions.BitmapScalingMode="HighQuality"
-                                                   TextOptions.TextRenderingMode="ClearType"
-                                                   UseLayoutRounding="True"/>
-                                        <TextBlock Grid.Column="1"
-                                                   Text="{Binding ServerRates.SealStonesRate, StringFormat='x{0}'}"
-                                                   Foreground="{StaticResource BrightGoldBrush}"
-                                                   FontSize="14"
-                                                   FontWeight="Bold"
-                                                   VerticalAlignment="Center"
-                                                   Margin="5,0,0,0"
-                                                   TextOptions.TextFormattingMode="Ideal"
-                                                   RenderOptions.ClearTypeHint="Enabled"
-                                                   RenderOptions.BitmapScalingMode="HighQuality"
-                                                   TextOptions.TextRenderingMode="ClearType"
-                                                   UseLayoutRounding="True">
-                                            <TextBlock.Effect>
-                                                <DropShadowEffect Color="#B8860B" BlurRadius="2" ShadowDepth="0" Opacity="0.4"/>
-                                            </TextBlock.Effect>
-                                        </TextBlock>
-                                    </Grid>
-                                    <Border Height="1" Margin="0,4,0,4" Background="{StaticResource OldGoldBrush}" Opacity="0.15"/>
-                                    
-                                    <!-- Manor -->
-                                    <Grid Margin="0,6">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0"
-                                                   Text="Manor"
-                                                   Foreground="{StaticResource GoldPaleBrush}"
-                                                   FontSize="13"
-                                                   FontWeight="SemiBold"
-                                                   VerticalAlignment="Center"
-                                                   TextOptions.TextFormattingMode="Ideal"
-                                                   RenderOptions.ClearTypeHint="Enabled"
-                                                   RenderOptions.BitmapScalingMode="HighQuality"
-                                                   TextOptions.TextRenderingMode="ClearType"
-                                                   UseLayoutRounding="True"/>
-                                        <TextBlock Grid.Column="1"
-                                                   Text="{Binding ServerRates.ManorRate, StringFormat='x{0}'}"
-                                                   Foreground="{StaticResource BrightGoldBrush}"
-                                                   FontSize="14"
-                                                   FontWeight="Bold"
-                                                   VerticalAlignment="Center"
-                                                   Margin="5,0,0,0"
-                                                   TextOptions.TextFormattingMode="Ideal"
-                                                   RenderOptions.ClearTypeHint="Enabled"
-                                                   RenderOptions.BitmapScalingMode="HighQuality"
-                                                   TextOptions.TextRenderingMode="ClearType"
-                                                   UseLayoutRounding="True">
-                                            <TextBlock.Effect>
-                                                <DropShadowEffect Color="#B8860B" BlurRadius="2" ShadowDepth="0" Opacity="0.4"/>
-                                            </TextBlock.Effect>
-                                        </TextBlock>
-                                    </Grid>
-                                </StackPanel>
-                        </Border>
-                    </Grid>
-                </Border>
-
-                <!-- Right Column: Play -->
-                <Border Grid.Column="1"
-                        Background="{StaticResource PrimaryBlackBrush}">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        
-                        <!-- Background Dragon Image - More visible -->
-                        <Border Grid.Row="0"
-                                Grid.RowSpan="3"
-                                Background="{StaticResource PrimaryBlackBrush}">
-                            <Grid>
-                                <!-- Dragon silhouette background -->
-                                <Image x:Name="DragonImage"
-                                       Stretch="UniformToFill"
-                                       HorizontalAlignment="Right"
-                                       VerticalAlignment="Center"
-                                       Opacity="0.65"
-                                       Margin="0,0,-100,0">
-                                    <!-- Fallback if image doesn't exist -->
-                                    <Image.Style>
-                                        <Style TargetType="Image">
-                                            <Style.Triggers>
-                                                <Trigger Property="Source" Value="{x:Null}">
-                                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                                </Trigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Image.Style>
-                                </Image>
-                                <!-- Placeholder text hidden since we have the image -->
-                                <TextBlock Text="DRAGON BACKGROUND"
-                                          Foreground="{StaticResource MediumGrayBrush}"
-                                          HorizontalAlignment="Right"
-                                          VerticalAlignment="Center"
-                                          FontSize="24"
-                                          Opacity="0.12"
-                                          Margin="0,0,50,0"
-                                          Visibility="Collapsed">
-                                </TextBlock>
-                            </Grid>
-                        </Border>
-                        
-                        <!-- Play Button -->
-                        <Button Grid.Row="1"
-                                Content="PLAY"
-                                Style="{StaticResource PlayButtonStyle}"
-                                Command="{Binding PlayCommand}"
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
-                                Margin="0,20"
-                                IsEnabled="{Binding IsPlayEnabled}"/>
-                        
-                        <!-- Progress Bar - Professional Design -->
-                        <Grid Grid.Row="2" Margin="30,15,30,25">
-                            <!-- Progress Bar Container -->
-                            <Border BorderBrush="{StaticResource GoldGradientBrush}"
-                                    BorderThickness="3"
-                                    CornerRadius="4"
-                                    Padding="3"
-                                    Background="{StaticResource PrimaryBlackBrush}"
-                                    RenderOptions.BitmapScalingMode="HighQuality"
-                                    RenderOptions.EdgeMode="Unspecified">
-                                <Border.Effect>
-                                    <DropShadowEffect Color="#000000" 
-                                                      BlurRadius="4" 
-                                                      ShadowDepth="1" 
-                                                      Opacity="0.5"
-                                                      Direction="135"/>
-                                </Border.Effect>
-                                <Grid>
-                                    <ProgressBar Style="{StaticResource ProgressBarStyle}"
-                                                 Value="{Binding Progress}"
-                                                 Height="28"/>
-                                    
-                                    <!-- Status Text Overlay - Inside Progress Bar -->
-                                    <TextBlock Text="{Binding StatusText}"
-                                               Foreground="{StaticResource BrightGoldBrush}"
-                                               HorizontalAlignment="Center"
-                                               VerticalAlignment="Center"
-                                               FontSize="12"
-                                               FontWeight="SemiBold"
-                                               FontFamily="{StaticResource UIFont}"
-                                               TextOptions.TextFormattingMode="Ideal"
-                                               TextOptions.TextRenderingMode="ClearType"
-                                               UseLayoutRounding="True"
-                                               RenderOptions.ClearTypeHint="Enabled"
-                                               RenderOptions.BitmapScalingMode="HighQuality"
-                                               Margin="0,0,0,0">
-                                        <TextBlock.Effect>
-                                            <DropShadowEffect Color="#000000" BlurRadius="1" ShadowDepth="0.5" Opacity="0.5"/>
-                                        </TextBlock.Effect>
-                                    </TextBlock>
-                                </Grid>
-                            </Border>
-                        </Grid>
-                    </Grid>
-                </Border>
-            </Grid>
-
-            <!-- Footer - Professional Design -->
-            <Border Grid.Row="2"
-                    Background="{StaticResource PrimaryBlackBrush}"
-                    BorderBrush="{StaticResource GoldGradientBrush}"
-                    BorderThickness="0,2,0,0">
-                <Border.Effect>
-                    <DropShadowEffect Color="{StaticResource OldGold}" 
-                                      BlurRadius="4" 
-                                      ShadowDepth="-1" 
-                                      Opacity="0.5"
-                                      Direction="270"/>
-                </Border.Effect>
-                <Grid Margin="25,12">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    
-                    <!-- Footer Links with decorative separators -->
-                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="Support"
-                                   Foreground="{StaticResource BrightGoldBrush}"
-                                   FontSize="13"
-                                   FontWeight="SemiBold"
-                                   Cursor="Hand"
-                                   Margin="0,0,25,0"
-                                   TextOptions.TextFormattingMode="Ideal"
-                                   TextOptions.TextRenderingMode="ClearType"
-                                   UseLayoutRounding="True"
-                                   RenderOptions.ClearTypeHint="Enabled"
-                                   RenderOptions.BitmapScalingMode="HighQuality">
-                            <TextBlock.Effect>
-                                <DropShadowEffect Color="#000000" BlurRadius="0.5" ShadowDepth="0" Opacity="0.2"/>
-                            </TextBlock.Effect>
-                            <TextBlock.InputBindings>
+                        <!-- Web -->
+                        <Border CornerRadius="4" Padding="10,5" Margin="0,0,8,0" Cursor="Hand"
+                                Background="#22C9A84C" BorderBrush="{StaticResource SeparatorGoldBrush}" BorderThickness="1">
+                            <Border.InputBindings>
                                 <MouseBinding Gesture="LeftClick" Command="{Binding OpenSupportCommand}"/>
-                            </TextBlock.InputBindings>
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
+                            </Border.InputBindings>
+                            <Border.Style>
+                                <Style TargetType="Border">
                                     <Style.Triggers>
                                         <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Foreground" Value="{StaticResource BrightGoldBrush}"/>
-                                            <Setter Property="Opacity" Value="0.8"/>
+                                            <Setter Property="Background" Value="#44C9A84C"/>
                                         </Trigger>
                                     </Style.Triggers>
                                 </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-                        
-                        <!-- Decorative separator -->
-                        <Border Width="1" Height="14" Background="{StaticResource OldGoldBrush}" Opacity="0.3" Margin="0,0,25,0"/>
-                        
-                        <TextBlock Text="Forum"
-                                   Foreground="{StaticResource BrightGoldBrush}"
-                                   FontSize="13"
-                                   FontWeight="SemiBold"
-                                   Cursor="Hand"
-                                   Margin="0,0,25,0"
-                                   TextOptions.TextFormattingMode="Ideal"
-                                   TextOptions.TextRenderingMode="ClearType"
-                                   UseLayoutRounding="True"
-                                   RenderOptions.ClearTypeHint="Enabled"
-                                   RenderOptions.BitmapScalingMode="HighQuality">
-                            <TextBlock.Effect>
-                                <DropShadowEffect Color="#000000" BlurRadius="0.5" ShadowDepth="0" Opacity="0.2"/>
-                            </TextBlock.Effect>
-                            <TextBlock.InputBindings>
-                                <MouseBinding Gesture="LeftClick" Command="{Binding OpenForumCommand}"/>
-                            </TextBlock.InputBindings>
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Style.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Foreground" Value="{StaticResource BrightGoldBrush}"/>
-                                            <Setter Property="Opacity" Value="0.8"/>
-                                        </Trigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-                        
-                        <!-- Decorative separator -->
-                        <Border Width="1" Height="14" Background="{StaticResource OldGoldBrush}" Opacity="0.3" Margin="0,0,25,0"/>
-                        
-                        <TextBlock Text="Discord"
-                                   Foreground="{StaticResource BrightGoldBrush}"
-                                   FontSize="13"
-                                   FontWeight="SemiBold"
-                                   Cursor="Hand"
-                                   TextOptions.TextFormattingMode="Ideal"
-                                   TextOptions.TextRenderingMode="ClearType"
-                                   UseLayoutRounding="True"
-                                   RenderOptions.ClearTypeHint="Enabled"
-                                   RenderOptions.BitmapScalingMode="HighQuality">
-                            <TextBlock.Effect>
-                                <DropShadowEffect Color="#000000" BlurRadius="0.5" ShadowDepth="0" Opacity="0.2"/>
-                            </TextBlock.Effect>
-                            <TextBlock.InputBindings>
+                            </Border.Style>
+                            <TextBlock Text="🌐  Website"
+                                       FontFamily="{StaticResource UIFont}"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource BrightGoldBrush}"
+                                       Style="{StaticResource BaseTextStyle}"/>
+                        </Border>
+
+                        <!-- Discord -->
+                        <Border CornerRadius="4" Padding="10,5" Margin="0,0,20,0" Cursor="Hand"
+                                Background="#225865F4" BorderBrush="#335865F4" BorderThickness="1">
+                            <Border.InputBindings>
                                 <MouseBinding Gesture="LeftClick" Command="{Binding OpenDiscordCommand}"/>
-                            </TextBlock.InputBindings>
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
+                            </Border.InputBindings>
+                            <Border.Style>
+                                <Style TargetType="Border">
                                     <Style.Triggers>
                                         <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Foreground" Value="{StaticResource BrightGoldBrush}"/>
-                                            <Setter Property="Opacity" Value="0.8"/>
+                                            <Setter Property="Background" Value="#445865F4"/>
                                         </Trigger>
                                     </Style.Triggers>
                                 </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
+                            </Border.Style>
+                            <TextBlock Text="💬  Discord"
+                                       FontFamily="{StaticResource UIFont}"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"
+                                       Foreground="#A5B4FC"
+                                       Style="{StaticResource BaseTextStyle}"/>
+                        </Border>
+
+                        <!-- Version -->
+                        <TextBlock Text="{Binding VersionText}"
+                                   FontFamily="{StaticResource UIFont}"
+                                   FontSize="11"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,16,0"
+                                   Style="{StaticResource BaseTextStyle}"/>
+
+                        <!-- Separator -->
+                        <Border Width="1" Height="16"
+                                Background="{StaticResource SeparatorGoldBrush}"
+                                VerticalAlignment="Center"
+                                Margin="0,0,12,0"/>
+
+                        <!-- Minimize -->
+                        <Button x:Name="MinimizeButton"
+                                Content="─"
+                                Style="{StaticResource WindowControlButtonStyle}"
+                                Click="MinimizeButton_Click"
+                                shell:WindowChrome.IsHitTestVisibleInChrome="True"
+                                Width="32" Height="32"
+                                Margin="0,0,4,0"/>
+                        <!-- Maximize / Restore -->
+                        <Button x:Name="MaximizeButton"
+                                Content="▢"
+                                Style="{StaticResource WindowControlButtonStyle}"
+                                Click="MaximizeButton_Click"
+                                shell:WindowChrome.IsHitTestVisibleInChrome="True"
+                                Width="32" Height="32"
+                                Margin="0,0,4,0"/>
+                        <!-- Close -->
+                        <Button x:Name="CloseButton"
+                                Content="✕"
+                                Style="{StaticResource WindowControlButtonStyle}"
+                                Click="CloseButton_Click"
+                                shell:WindowChrome.IsHitTestVisibleInChrome="True"
+                                Width="32" Height="32"/>
                     </StackPanel>
                 </Grid>
             </Border>
+
+            <!-- ================================================ -->
+            <!-- ROW 1: HERO — WebView2                           -->
+            <!-- ================================================ -->
+            <Grid Grid.Row="1">
+                <!-- WebView2 embedded browser. Source is set in code-behind AFTER
+                     EnsureCoreWebView2Async so the custom userDataFolder environment is honored. -->
+                <wv2:WebView2 x:Name="LauncherWebView"
+                              Visibility="Collapsed"/>
+
+                <!-- Fallback: shown if WebView2 runtime not available -->
+                <Border x:Name="WebViewFallback"
+                        Background="#110D0D12"
+                        Visibility="Visible">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <TextBlock Text="🌐"
+                                   FontSize="48"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,16"
+                                   Style="{StaticResource BaseTextStyle}"/>
+                        <TextBlock x:Name="FallbackMessage"
+                                   Text="Loading content..."
+                                   FontFamily="{StaticResource UIFont}"
+                                   FontSize="14"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   HorizontalAlignment="Center"
+                                   Style="{StaticResource BaseTextStyle}"/>
+                        <TextBlock Text="Visit l2-titan.com"
+                                   FontFamily="{StaticResource UIFont}"
+                                   FontSize="12"
+                                   Foreground="{StaticResource SeparatorGoldBrush}"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,8,0,0"
+                                   Style="{StaticResource BaseTextStyle}">
+                            <TextBlock.InputBindings>
+                                <MouseBinding Gesture="LeftClick" Command="{Binding OpenSupportCommand}"/>
+                            </TextBlock.InputBindings>
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- ================================================ -->
+            <!-- ROW 2: ACTION BAR                                 -->
+            <!-- ================================================ -->
+            <Border Grid.Row="2" Style="{StaticResource ActionBarStyle}">
+                <Grid Margin="40,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>     <!-- Progress + status -->
+                        <ColumnDefinition Width="180"/>   <!-- Play button -->
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Left: Status text + Progress bar -->
+                    <StackPanel Grid.Column="0"
+                                VerticalAlignment="Center"
+                                Margin="0,0,36,0">
+                        <TextBlock Text="{Binding StatusText}"
+                                   FontFamily="{StaticResource UIFont}"
+                                   FontSize="12"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Margin="0,0,0,8"
+                                   Style="{StaticResource BaseTextStyle}"/>
+                        <ProgressBar Style="{StaticResource ModernProgressBarStyle}"
+                                     Value="{Binding Progress}"/>
+                    </StackPanel>
+
+                    <!-- Right: Play button -->
+                    <Button Grid.Column="1"
+                            Content="{Binding ButtonText}"
+                            Style="{StaticResource ModernPlayButtonStyle}"
+                            Command="{Binding PlayCommand}"
+                            IsEnabled="{Binding IsPlayEnabled}"
+                            Background="{Binding ButtonBackgroundBrush, UpdateSourceTrigger=PropertyChanged}"
+                            BorderBrush="{Binding ButtonBorderBrush, UpdateSourceTrigger=PropertyChanged}"
+                            Foreground="{Binding ButtonForegroundBrush, UpdateSourceTrigger=PropertyChanged}"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Center"/>
+                </Grid>
+            </Border>
+
         </Grid>
     </Border>
 </Window>

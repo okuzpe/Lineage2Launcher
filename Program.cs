@@ -1,7 +1,7 @@
 using System;
 using System.Windows.Forms;
 
-namespace Lineage2Launcher
+namespace L2TitanLauncher
 {
     internal static class Program
     {

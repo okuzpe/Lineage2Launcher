@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Newtonsoft.Json;
 
-namespace Lineage2Launcher
+namespace L2TitanLauncher
 {
     public enum ButtonState
     {
@@ -523,7 +523,7 @@ namespace Lineage2Launcher
                     // Crear archivo de configuración por defecto en AppData
                     string appDataPath = Path.Combine(
                         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                        "Lineage2Launcher"
+                        "L2TitanLauncher"
                     );
                     Directory.CreateDirectory(appDataPath);
                     string defaultConfigPath = Path.Combine(appDataPath, "config.json");
@@ -562,7 +562,7 @@ namespace Lineage2Launcher
             // 2. En AppData del usuario (ubicación persistente)
             string appDataPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "Lineage2Launcher",
+                "L2TitanLauncher",
                 "config.json"
             );
             if (File.Exists(appDataPath))
@@ -770,8 +770,8 @@ namespace Lineage2Launcher
                     {
                         // Solo mostrar cada 10 archivos OK para no saturar el log
                         if (filesOk <= 10 || processedFiles % 10 == 0)
-                        {
-                            LogMessage($"✓ {fileInfo.Path} - OK");
+                    {
+                        LogMessage($"✓ {fileInfo.Path} - OK");
                         }
                     }
                 }
@@ -804,28 +804,28 @@ namespace Lineage2Launcher
                     LogMessage($"Downloading: {Path.GetFileName(filePath)}");
                     lblStatus.Text = $"Downloading: {Path.GetFileName(filePath)}";
 
-                    var response = await httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
-                    response.EnsureSuccessStatusCode();
+                var response = await httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
+                response.EnsureSuccessStatusCode();
 
-                    var totalBytes = response.Content.Headers.ContentLength ?? 0;
-                    var downloadedBytes = 0L;
+                var totalBytes = response.Content.Headers.ContentLength ?? 0;
+                var downloadedBytes = 0L;
                     var startTime = DateTime.Now;
 
-                    using (var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None))
-                    using (var httpStream = await response.Content.ReadAsStreamAsync())
+                using (var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None))
+                using (var httpStream = await response.Content.ReadAsStreamAsync())
+                {
+                    var buffer = new byte[8192];
+                    int bytesRead;
+
+                    while ((bytesRead = await httpStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
                     {
-                        var buffer = new byte[8192];
-                        int bytesRead;
+                        await fileStream.WriteAsync(buffer, 0, bytesRead);
+                        downloadedBytes += bytesRead;
 
-                        while ((bytesRead = await httpStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                        if (totalBytes > 0)
                         {
-                            await fileStream.WriteAsync(buffer, 0, bytesRead);
-                            downloadedBytes += bytesRead;
-
-                            if (totalBytes > 0)
-                            {
-                                var progress = (int)((downloadedBytes * 100) / totalBytes);
-                                progressBar.Value = Math.Min(progress, 100);
+                            var progress = (int)((downloadedBytes * 100) / totalBytes);
+                            progressBar.Value = Math.Min(progress, 100);
 
                                 // Mostrar velocidad de descarga cada 1MB
                                 if (downloadedBytes % 1048576 < 8192)
@@ -837,37 +837,37 @@ namespace Lineage2Launcher
                                         lblStatus.Text = $"Downloading: {Path.GetFileName(filePath)} ({speed:F0} KB/s)";
                                     }
                                 }
-                            }
                         }
                     }
+                }
 
-                    // Verificar hash después de descargar
+                // Verificar hash después de descargar
                     LogMessage($"Verifying integrity: {Path.GetFileName(filePath)}");
-                    var downloadedHash = CalculateFileHash(filePath);
-                    if (downloadedHash != expectedHash)
-                    {
-                        File.Delete(filePath);
+                var downloadedHash = CalculateFileHash(filePath);
+                if (downloadedHash != expectedHash)
+                {
+                    File.Delete(filePath);
                         throw new Exception($"Downloaded file does not match expected hash. Local hash: {downloadedHash.Substring(0, 8)}..., expected: {expectedHash.Substring(0, 8)}...");
-                    }
+                }
 
                     LogMessage($"✓ Downloaded and verified: {Path.GetFileName(filePath)} ({(totalBytes > 0 ? $"{totalBytes / 1024 / 1024:F2} MB" : "unknown size")})");
                     return; // Éxito, salir del loop de reintentos
-                }
-                catch (Exception ex)
-                {
+            }
+            catch (Exception ex)
+            {
                     lastException = ex;
                     retryCount++;
 
-                    if (File.Exists(filePath))
-                    {
+                if (File.Exists(filePath))
+                {
                         try { File.Delete(filePath); } catch { }
-                    }
+                }
 
                     if (retryCount >= maxRetries)
                     {
                         LogMessage($"✗ Error after {maxRetries} attempts: {Path.GetFileName(filePath)}");
                         throw new Exception($"Error downloading {Path.GetFileName(filePath)} after {maxRetries} attempts: {ex.Message}");
-                    }
+            }
                 }
             }
 
@@ -927,7 +927,7 @@ namespace Lineage2Launcher
 
                 try
                 {
-                    Process.Start(startInfo);
+                Process.Start(startInfo);
                     LogMessage("Game started!");
                 }
                 catch (System.ComponentModel.Win32Exception winEx)

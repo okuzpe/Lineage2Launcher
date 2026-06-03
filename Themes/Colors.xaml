@@ -1,21 +1,32 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    
-    <!-- Paleta Épica Fantasy - Lineage II -->
-    
-    <!-- Colores Base - Exactos de la referencia -->
-    <Color x:Key="PrimaryBlack">#0B0B0F</Color>
-    <Color x:Key="MetallicGray">#1E2226</Color>
-    <Color x:Key="OldGold">#B8860B</Color>
-    <Color x:Key="BrightGold">#D4AF37</Color>
-    <Color x:Key="PlayRed">#6C1B1B</Color>
-    <Color x:Key="BloodRed">#7A0B0B</Color>
+
+    <!-- === PALETA MODERNA L2TITAN — RIOT/STEAM STYLE === -->
+
+    <!-- Colores Base -->
+    <Color x:Key="PrimaryBlack">#0D0D12</Color>
+    <Color x:Key="MetallicGray">#161820</Color>
+    <Color x:Key="OldGold">#A8893C</Color>
+    <Color x:Key="BrightGold">#C9A84C</Color>
+    <Color x:Key="PlayRed">#7A1414</Color>
+    <Color x:Key="BloodRed">#5C0E0E</Color>
     <Color x:Key="LightGray">#C0C0C0</Color>
     <Color x:Key="MediumGray">#808080</Color>
     <Color x:Key="GoldPale">#CFC0A8</Color>
-    <Color x:Key="GreenOnline">#00FF00</Color>
-    
-    <!-- Brushes -->
+    <Color x:Key="GreenOnline">#4ADE80</Color>
+
+    <!-- Nuevos Colores Modernos -->
+    <Color x:Key="AccentGoldHigh">#F0D98C</Color>
+    <Color x:Key="TextPrimary">#EDE8DC</Color>
+    <Color x:Key="TextSecondary">#7A7068</Color>
+    <Color x:Key="SurfaceGlass">#1A1C22</Color>
+    <Color x:Key="TopBarBg">#0A0A0F</Color>
+    <Color x:Key="ActionBarBg">#060608</Color>
+    <Color x:Key="StatusOnline">#4ADE80</Color>
+    <Color x:Key="StatusOffline">#F87171</Color>
+    <Color x:Key="StatusMaintenance">#FBBF24</Color>
+
+    <!-- Brushes Base -->
     <SolidColorBrush x:Key="PrimaryBlackBrush" Color="{StaticResource PrimaryBlack}"/>
     <SolidColorBrush x:Key="MetallicGrayBrush" Color="{StaticResource MetallicGray}"/>
     <SolidColorBrush x:Key="OldGoldBrush" Color="{StaticResource OldGold}"/>
@@ -24,71 +35,101 @@
     <SolidColorBrush x:Key="BloodRedBrush" Color="{StaticResource BloodRed}"/>
     <SolidColorBrush x:Key="LightGrayBrush" Color="{StaticResource LightGray}"/>
     <SolidColorBrush x:Key="MediumGrayBrush" Color="{StaticResource MediumGray}"/>
-    
-    <!-- Text Colors -->
-    <SolidColorBrush x:Key="TextOnDarkBrush" Color="{StaticResource LightGray}"/>
+
+    <!-- Nuevos Brushes Modernos -->
+    <SolidColorBrush x:Key="AccentGoldHighBrush" Color="{StaticResource AccentGoldHigh}"/>
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimary}"/>
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondary}"/>
+    <SolidColorBrush x:Key="SurfaceGlassBrush" Color="{StaticResource SurfaceGlass}"/>
+    <SolidColorBrush x:Key="StatusOnlineBrush" Color="{StaticResource StatusOnline}"/>
+    <SolidColorBrush x:Key="StatusOfflineBrush" Color="{StaticResource StatusOffline}"/>
+    <SolidColorBrush x:Key="StatusMaintenanceBrush" Color="{StaticResource StatusMaintenance}"/>
+
+    <!-- Text Colors (compat) -->
+    <SolidColorBrush x:Key="TextOnDarkBrush" Color="{StaticResource TextPrimary}"/>
     <SolidColorBrush x:Key="TextOnGoldBrush" Color="{StaticResource PrimaryBlack}"/>
     <SolidColorBrush x:Key="GoldPaleBrush" Color="{StaticResource GoldPale}"/>
     <SolidColorBrush x:Key="GreenOnlineBrush" Color="{StaticResource GreenOnline}"/>
-    
-    <!-- Status Colors -->
-    <SolidColorBrush x:Key="ServerOnlineBrush" Color="#00FF00"/>
-    <SolidColorBrush x:Key="ServerMaintenanceBrush" Color="#FFFF00"/>
-    <SolidColorBrush x:Key="ServerOfflineBrush" Color="#FF0000"/>
-    
-    <!-- Gradients -->
+
+    <!-- Status Colors (compat) -->
+    <SolidColorBrush x:Key="ServerOnlineBrush" Color="{StaticResource StatusOnline}"/>
+    <SolidColorBrush x:Key="ServerMaintenanceBrush" Color="{StaticResource StatusMaintenance}"/>
+    <SolidColorBrush x:Key="ServerOfflineBrush" Color="{StaticResource StatusOffline}"/>
+
+    <!-- Gradientes Modernos -->
     <LinearGradientBrush x:Key="GoldGradientBrush" StartPoint="0,0" EndPoint="0,1">
-        <GradientStop Color="#C8960C" Offset="0"/>
-        <GradientStop Color="#E6C87E" Offset="1"/>
+        <GradientStop Color="#A8893C" Offset="0"/>
+        <GradientStop Color="#E0C87A" Offset="1"/>
     </LinearGradientBrush>
-    
+
     <LinearGradientBrush x:Key="GoldGradientHorizontalBrush" StartPoint="0,0" EndPoint="1,0">
         <GradientStop Color="{StaticResource OldGold}" Offset="0"/>
         <GradientStop Color="{StaticResource BrightGold}" Offset="1"/>
     </LinearGradientBrush>
-    
-    <!-- Additional colors for effects -->
-    <Color x:Key="GoldShadow">#8B6914</Color>
-    <Color x:Key="RedShadow">#4A0F0F</Color>
+
+    <!-- Shadow / Glow helpers -->
+    <Color x:Key="GoldShadow">#7A6020</Color>
+    <Color x:Key="RedShadow">#3A0A0A</Color>
     <SolidColorBrush x:Key="GoldShadowBrush" Color="{StaticResource GoldShadow}"/>
     <SolidColorBrush x:Key="RedShadowBrush" Color="{StaticResource RedShadow}"/>
-    
-    <!-- Play Button Gradient (red with subtle variation) - More vibrant -->
+
+    <!-- Play Button Gradient — Apple green para estado Ready = señal de "GO" -->
     <LinearGradientBrush x:Key="PlayButtonGradientBrush" StartPoint="0,0" EndPoint="0,1">
-        <GradientStop Color="#8B1A1A" Offset="0"/>
-        <GradientStop Color="#6C1B1B" Offset="1"/>
+        <GradientStop Color="#43A047" Offset="0"/>
+        <GradientStop Color="#2E7D32" Offset="1"/>
     </LinearGradientBrush>
-    
-    <!-- Gold Border Gradient for Metallic Effect -->
+
+    <!-- Green Border Gradient — para botón PLAY listo -->
     <LinearGradientBrush x:Key="GoldBorderGradientBrush" StartPoint="0,0" EndPoint="0,1">
-        <GradientStop Color="#F0D896" Offset="0"/>
-        <GradientStop Color="#B8860B" Offset="0.5"/>
-        <GradientStop Color="#9A7A0A" Offset="1"/>
+        <GradientStop Color="#66BB6A" Offset="0"/>
+        <GradientStop Color="#43A047" Offset="0.5"/>
+        <GradientStop Color="#1B5E20" Offset="1"/>
     </LinearGradientBrush>
-    
-    <!-- Gold Glow Brush for Hover Effect -->
-    <SolidColorBrush x:Key="GoldGlowBrush" Color="#B8860B"/>
-    
-    <!-- Progress Bar Fill Gradient -->
+
+    <!-- Gold Glow -->
+    <SolidColorBrush x:Key="GoldGlowBrush" Color="{StaticResource OldGold}"/>
+
+    <!-- Progress Bar Fill — key preservado -->
     <LinearGradientBrush x:Key="ProgressFillGradientBrush" StartPoint="0,0" EndPoint="1,0">
         <GradientStop Color="{StaticResource OldGold}" Offset="0"/>
         <GradientStop Color="{StaticResource BrightGold}" Offset="0.5"/>
         <GradientStop Color="{StaticResource OldGold}" Offset="1"/>
     </LinearGradientBrush>
-    
-    <!-- Gold Border Texture Brush (will be set from code) -->
-    <ImageBrush x:Key="GoldBorderTextureBrush" 
-                Stretch="UniformToFill" 
+
+    <!-- Gold Border Texture (compat) -->
+    <ImageBrush x:Key="GoldBorderTextureBrush"
+                Stretch="UniformToFill"
                 Opacity="0.6"
                 TileMode="Tile"
                 Viewport="0,0,100,100"
                 ViewportUnits="Absolute"/>
-    
-    <!-- Typography Resources - Cinzel as Primary -->
-    <!-- Using absolute URI path to Fonts folder for embedded fonts -->
-    <FontFamily x:Key="EpicTitleFont">file:///./Fonts/#Cinzel</FontFamily>
-    <FontFamily x:Key="EpicSubtitleFont">file:///./Fonts/#Cinzel</FontFamily>
-    <FontFamily x:Key="UIFont">Segoe UI</FontFamily>
-    
-</ResourceDictionary>
 
+    <!-- === Nuevos Brushes para el Layout Moderno === -->
+
+    <!-- TopBar: fondo semitransparente oscuro -->
+    <LinearGradientBrush x:Key="TopBarBackgroundBrush" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#E60A0A0F" Offset="0"/>
+        <GradientStop Color="#990A0A0F" Offset="1"/>
+    </LinearGradientBrush>
+
+    <!-- ActionBar: panel inferior muy oscuro -->
+    <LinearGradientBrush x:Key="ActionBarBackgroundBrush" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#F0060608" Offset="0"/>
+        <GradientStop Color="#F80D0D12" Offset="1"/>
+    </LinearGradientBrush>
+
+    <!-- Glass Card: superficie semitransparente -->
+    <LinearGradientBrush x:Key="GlassCardBrush" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#C81A1C22" Offset="0"/>
+        <GradientStop Color="#CC12131A" Offset="1"/>
+    </LinearGradientBrush>
+
+    <!-- Separator gold tenue -->
+    <SolidColorBrush x:Key="SeparatorGoldBrush" Color="#33C9A84C"/>
+
+    <!-- Typography Resources -->
+    <FontFamily x:Key="EpicTitleFont">pack://application:,,,/L2TitanLauncher;component/Fonts/Cinzel-Bold.ttf#Cinzel</FontFamily>
+    <FontFamily x:Key="EpicSubtitleFont">pack://application:,,,/L2TitanLauncher;component/Fonts/Cinzel-Regular.ttf#Cinzel</FontFamily>
+    <FontFamily x:Key="UIFont">Segoe UI</FontFamily>
+
+</ResourceDictionary>

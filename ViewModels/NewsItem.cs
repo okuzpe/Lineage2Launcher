@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace Lineage2Launcher.ViewModels
+namespace L2TitanLauncher.ViewModels
 {
     public class NewsItem : INotifyPropertyChanged
     {

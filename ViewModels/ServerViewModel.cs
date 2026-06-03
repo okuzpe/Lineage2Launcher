@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using System.Windows.Media;
 
-namespace Lineage2Launcher.ViewModels
+namespace L2TitanLauncher.ViewModels
 {
     public enum ServerStatus
     {

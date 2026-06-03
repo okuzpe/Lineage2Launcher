@@ -10,13 +10,13 @@ import json
 import hashlib
 from pathlib import Path
 
-def calculate_md5(file_path):
-    """Calcula el hash MD5 de un archivo"""
-    hash_md5 = hashlib.md5()
+def calculate_sha256(file_path):
+    """Calcula el hash SHA-256 de un archivo (debe coincidir con el launcher)"""
+    hash_sha256 = hashlib.sha256()
     with open(file_path, "rb") as f:
         for chunk in iter(lambda: f.read(4096), b""):
-            hash_md5.update(chunk)
-    return hash_md5.hexdigest().lower()
+            hash_sha256.update(chunk)
+    return hash_sha256.hexdigest().lower()
 
 def generate_manifest(game_path, output_path):
     """Genera el manifest.json desde la carpeta del juego"""
@@ -33,33 +33,44 @@ def generate_manifest(game_path, output_path):
             # Excluir manifest.json del manifest (no debe incluirse a sí mismo)
             if file.lower() == "manifest.json":
                 continue
-                
+
+            # Excluir archivos *.log (el ZIP de deploy-simple.sh tambien los excluye)
+            if file.lower().endswith(".log"):
+                continue
+
             file_path = Path(root) / file
             rel_path = file_path.relative_to(game_path)
             
             # Incluir TODOS los archivos (sin filtrar por extensión)
-                try:
-                    file_size = file_path.stat().st_size
-                    file_hash = calculate_md5(file_path)
-                    
-                    # Convertir a formato Windows (backslash)
-                    path_str = str(rel_path).replace('/', '\\')
-                    
-                    manifest.append({
-                        "Path": path_str,
-                        "Hash": file_hash,
-                        "Size": file_size
-                    })
-                    
-                    print(f"✓ {path_str} ({file_size} bytes)")
-                except Exception as e:
-                    print(f"✗ Error procesando {rel_path}: {e}")
+            try:
+                file_size = file_path.stat().st_size
+                file_hash = calculate_sha256(file_path)
+
+                # Convertir a formato Windows (backslash)
+                path_str = str(rel_path).replace('/', '\\')
+
+                # Rechazar rutas con traversal ('..') o rutas absolutas/rooteadas para que
+                # un manifest no pueda hacer que el launcher escriba fuera del directorio del juego.
+                if rel_path.is_absolute() or any(part == '..' for part in rel_path.parts) \
+                        or path_str.startswith('\\') or (len(path_str) >= 2 and path_str[1] == ':'):
+                    print(f"[SKIP] Ruta insegura ignorada: {path_str}")
+                    continue
+
+                manifest.append({
+                    "Path": path_str,
+                    "Hash": file_hash,
+                    "Size": file_size
+                })
+                
+                print(f"[OK] {path_str} ({file_size} bytes)")
+            except Exception as e:
+                print(f"[ERR] Error procesando {rel_path}: {e}")
     
     # Guardar manifest
     with open(output_path, 'w', encoding='utf-8') as f:
         json.dump(manifest, f, indent=2, ensure_ascii=False)
     
-    print(f"\n✓ Manifest generado: {output_path}")
+    print(f"\n[OK] Manifest generado: {output_path}")
     print(f"  Total de archivos: {len(manifest)}")
     return manifest
 
