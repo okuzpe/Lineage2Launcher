@@ -127,3 +127,7 @@ Desktop.ini
 # Others
 *.cache
 *.orig
+
+# Local backups — never commit (GitHub 100MB limit)
+backups/
+*.zip
