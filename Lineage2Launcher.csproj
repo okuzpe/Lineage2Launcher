@@ -41,22 +41,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- img folder - embed as resources (no longer external files) -->
-    <Resource Include="img\background.jpg">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="img\lineage-2-seeklogo.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <!-- Assets: Images - Embed as Resources -->
-    <Resource Include="Assets\images\*.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\images\*.jpg">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <!-- Assets: UI - Embed as Resources -->
-    <Resource Include="Assets\ui\*.png">
+    <!-- Assets: Images - Embed as Resources (only what the UI actually references) -->
+    <Resource Include="Assets\images\background.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
     <!-- Fonts - Embed as Resources -->
@@ -81,9 +67,6 @@
     <Resource Include="Fonts\Cinzel-VariableFont_wght.ttf">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
-    <!-- Excluir archivos WinForms antiguos (preservados como backup) -->
-    <Compile Remove="MainForm.cs" />
-    <Compile Remove="Program.cs" />
   </ItemGroup>
 
   <!-- Assets are now embedded as resources, no need to copy them separately -->

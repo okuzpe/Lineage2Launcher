@@ -568,6 +568,14 @@ namespace L2TitanLauncher.ViewModels
                         // Normal cancellation (e.g. window closing) - not a failure
                         return;
                     }
+                    catch (LauncherError le)
+                    {
+                        // Crafted user-facing message: show it verbatim instead of the generic text
+                        AddLog($"✗ Error during verification: {le.Message}");
+                        MessageBox.Show(le.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        CurrentButtonState = ButtonState.Disabled;
+                        StatusText = le.Message;
+                    }
                     catch (Exception ex)
                     {
                         AddLog($"✗ Error during verification: {ex.Message}");
@@ -655,6 +663,13 @@ namespace L2TitanLauncher.ViewModels
             {
                 // Normal cancellation (e.g. window closing) - not a failure
                 return;
+            }
+            catch (LauncherError le)
+            {
+                // Crafted user-facing message: show it verbatim instead of the generic text
+                AddLog($"✗ Auto-verification error: {le.Message}");
+                CurrentButtonState = ButtonState.Disabled;
+                StatusText = le.Message;
             }
             catch (Exception ex)
             {
@@ -901,16 +916,16 @@ namespace L2TitanLauncher.ViewModels
                             errorMessage.Contains("network") || errorMessage.Contains("resolve") ||
                             errorMessage.Contains("refused") || errorMessage.Contains("unreachable"))
                         {
-                            throw new Exception("Could not connect to server. Please check your internet connection and try again later.");
+                            throw new LauncherError("Could not connect to server. Please check your internet connection and try again later.");
                         }
-                        throw new Exception($"Could not download manifest after {manifestRetries} attempts: {ex.Message}");
+                        throw new LauncherError($"Could not download manifest after {manifestRetries} attempts: {ex.Message}");
                     }
                     AddLog($"Error downloading manifest: {ex.Message}");
                 }
             }
 
             if (string.IsNullOrEmpty(manifestJson))
-                throw new Exception("Could not download manifest.");
+                throw new LauncherError("Could not download manifest.");
 
             try
             {
@@ -918,11 +933,11 @@ namespace L2TitanLauncher.ViewModels
             }
             catch (JsonException)
             {
-                throw new Exception("The update manifest from the server is corrupted or invalid. Please try again later or contact support.");
+                throw new LauncherError("The update manifest from the server is corrupted or invalid. Please try again later or contact support.");
             }
 
             if (_fileManifest == null || _fileManifest.Count == 0)
-                throw new Exception("The manifest is empty or invalid.");
+                throw new LauncherError("The manifest is empty or invalid.");
 
             AddLog($"✓ Manifest downloaded successfully.");
             AddLog($"Found {_fileManifest.Count} files in manifest.");
@@ -1190,9 +1205,8 @@ namespace L2TitanLauncher.ViewModels
                     // Do not retry: the server file is corrupt or its manifest hash is wrong,
                     // so re-downloading the identical bytes cannot succeed.
                     AddLog($"✗ Hash mismatch (server file appears corrupted): {Path.GetFileName(filePath)}");
-                    throw new Exception(
-                        $"A game file on the server appears corrupted (hash mismatch): {Path.GetFileName(filePath)}. " +
-                        "This is a server problem - retrying will not help; please contact support.");
+                    throw new LauncherError(
+                        $"Server file corrupted ({Path.GetFileName(filePath)}). Retrying won't help - please contact support.");
                 }
                 catch (Exception ex)
                 {
@@ -1200,10 +1214,9 @@ namespace L2TitanLauncher.ViewModels
                         ex.Message.Contains("Access to the path", StringComparison.OrdinalIgnoreCase) ||
                         ex.Message.Contains("access is denied", StringComparison.OrdinalIgnoreCase))
                     {
-                        throw new Exception(
-                            $"No write permission for file '{filePath}'. " +
-                            "Move the game outside Program Files (for example C:\\Games\\L2) " +
-                            "or run the launcher as Administrator.");
+                        throw new LauncherError(
+                            "No write permission in game folder. Move the game outside Program Files " +
+                            "(for example C:\\Games\\L2) or run the launcher as Administrator.");
                     }
 
                     if (ex is IOException && (ex.Message.Contains("not enough space", StringComparison.OrdinalIgnoreCase) ||
@@ -1213,7 +1226,7 @@ namespace L2TitanLauncher.ViewModels
                         {
                             try { File.Delete(tempPath); } catch { }
                         }
-                        throw new Exception("Not enough disk space to download updates. Free up space and try again.");
+                        throw new LauncherError("Not enough disk space to download updates. Free up space and try again.");
                     }
 
                     if (ex is IOException && ex.Message.Contains("being used by another process", StringComparison.OrdinalIgnoreCase))
@@ -1222,7 +1235,7 @@ namespace L2TitanLauncher.ViewModels
                         {
                             try { File.Delete(tempPath); } catch { }
                         }
-                        throw new Exception("Please close the game before updating, then click RETRY.");
+                        throw new LauncherError("Please close the game before updating, then click RETRY.");
                     }
 
                     lastException = ex;
@@ -1236,7 +1249,7 @@ namespace L2TitanLauncher.ViewModels
                     if (retryCount >= maxRetries)
                     {
                         AddLog($"✗ Error after {maxRetries} attempts: {Path.GetFileName(filePath)}");
-                        throw new Exception($"Error downloading {Path.GetFileName(filePath)} after {maxRetries} attempts: {ex.Message}");
+                        throw new LauncherError($"Error downloading {Path.GetFileName(filePath)} after {maxRetries} attempts: {ex.Message}");
                     }
                 }
             }
@@ -1246,6 +1259,13 @@ namespace L2TitanLauncher.ViewModels
 
         // Distinguishes a content/hash-verification failure from a transient network error
         private class HashMismatchException : Exception { }
+
+        // User-facing error: its Message is crafted to be shown directly in the status bar,
+        // instead of being collapsed into the generic "Auto-verification failed" text.
+        private class LauncherError : Exception
+        {
+            public LauncherError(string message) : base(message) { }
+        }
 
         private static string CalculateFileHash(string filePath)
         {
@@ -1335,7 +1355,14 @@ namespace L2TitanLauncher.ViewModels
 
         public void AddLog(string message)
         {
-            Application.Current.Dispatcher.Invoke(() =>
+#if DEBUG
+            // Mirror to the debug console so failures are diagnosable without UI access
+            Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] {message}");
+#endif
+            // Guard against shutdown: Application.Current is null during teardown
+            var app = Application.Current;
+            if (app == null) return;
+            app.Dispatcher.Invoke(() =>
             {
                 _logMessages.Add($"[{DateTime.Now:HH:mm:ss}] {message}");
                 if (_logMessages.Count > 100)
