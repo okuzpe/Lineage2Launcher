@@ -346,6 +346,7 @@ namespace L2TitanLauncher.ViewModels
         public ICommand OpenSupportCommand { get; }
         public ICommand OpenForumCommand { get; }
         public ICommand OpenDiscordCommand { get; }
+        public ICommand OpenTikTokCommand { get; }
 
         // === Tab navigation ===
         public ICommand NavigateToHomeCommand { get; }
@@ -369,7 +370,8 @@ namespace L2TitanLauncher.ViewModels
             ResumeCommand = new RelayCommand(() => { _isDownloadPaused = false; CurrentButtonState = ButtonState.Downloading; AddLog("Download resumed by user."); });
             OpenSupportCommand = new RelayCommand(() => System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = "https://l2-titan.com/", UseShellExecute = true }));
             OpenForumCommand = new RelayCommand(() => System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = "https://forum.example.com", UseShellExecute = true }));
-            OpenDiscordCommand = new RelayCommand(() => System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = "https://discord.gg/example", UseShellExecute = true }));
+            OpenDiscordCommand = new RelayCommand(() => System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = "https://discord.gg/xH76F9vsGf", UseShellExecute = true }));
+            OpenTikTokCommand = new RelayCommand(() => System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = "https://www.tiktok.com/@omar781002", UseShellExecute = true }));
 
             // Tab navigation & carousel
             NavigateToHomeCommand = new RelayCommand(() => CurrentTab = AppTab.Home);

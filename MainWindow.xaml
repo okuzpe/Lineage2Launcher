@@ -160,7 +160,7 @@
                         </Border>
 
                         <!-- Discord -->
-                        <Border CornerRadius="4" Padding="10,5" Margin="0,0,20,0" Cursor="Hand"
+                        <Border CornerRadius="4" Padding="10,5" Margin="0,0,8,0" Cursor="Hand"
                                 Background="#225865F4" BorderBrush="#335865F4" BorderThickness="1">
                             <Border.InputBindings>
                                 <MouseBinding Gesture="LeftClick" Command="{Binding OpenDiscordCommand}"/>
@@ -179,6 +179,29 @@
                                        FontSize="12"
                                        FontWeight="SemiBold"
                                        Foreground="#A5B4FC"
+                                       Style="{StaticResource BaseTextStyle}"/>
+                        </Border>
+
+                        <!-- TikTok -->
+                        <Border CornerRadius="4" Padding="10,5" Margin="0,0,20,0" Cursor="Hand"
+                                Background="#22FE2C55" BorderBrush="#33FE2C55" BorderThickness="1">
+                            <Border.InputBindings>
+                                <MouseBinding Gesture="LeftClick" Command="{Binding OpenTikTokCommand}"/>
+                            </Border.InputBindings>
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#44FE2C55"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <TextBlock Text="🎵  TikTok"
+                                       FontFamily="{StaticResource UIFont}"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"
+                                       Foreground="#FDA4AF"
                                        Style="{StaticResource BaseTextStyle}"/>
                         </Border>
 
