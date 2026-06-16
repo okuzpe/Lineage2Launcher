@@ -1,9 +1,9 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!-- ================================================ -->
-    <!-- BASE STYLES                                       -->
-    <!-- ================================================ -->
+    <!-- Solo se conservan los estilos realmente usados por MainWindow.xaml.
+         Los estilos del layout antiguo (tabs, glass cards, slide panel, news/server,
+         rate template, legacy) se eliminaron por no tener consumidor. -->
 
     <!-- Base TextBlock Style - ClearType rendering -->
     <Style x:Key="BaseTextStyle" TargetType="TextBlock">
@@ -13,52 +13,6 @@
         <Setter Property="RenderOptions.ClearTypeHint" Value="Enabled"/>
         <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality"/>
     </Style>
-
-    <!-- Gold Label Style -->
-    <Style x:Key="GoldLabelStyle" TargetType="TextBlock" BasedOn="{StaticResource BaseTextStyle}">
-        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
-        <Setter Property="FontSize" Value="12"/>
-        <Setter Property="FontWeight" Value="Normal"/>
-        <Setter Property="VerticalAlignment" Value="Center"/>
-    </Style>
-
-    <!-- Gold Value Style -->
-    <Style x:Key="GoldValueStyle" TargetType="TextBlock" BasedOn="{StaticResource BaseTextStyle}">
-        <Setter Property="Foreground" Value="{StaticResource BrightGoldBrush}"/>
-        <Setter Property="FontSize" Value="13"/>
-        <Setter Property="FontWeight" Value="Bold"/>
-        <Setter Property="VerticalAlignment" Value="Center"/>
-        <Setter Property="Margin" Value="5,0,0,0"/>
-    </Style>
-
-    <!-- Footer / Nav Link Style -->
-    <Style x:Key="FooterLinkStyle" TargetType="TextBlock" BasedOn="{StaticResource BaseTextStyle}">
-        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
-        <Setter Property="FontSize" Value="12"/>
-        <Setter Property="FontFamily" Value="{StaticResource UIFont}"/>
-        <Setter Property="FontWeight" Value="Normal"/>
-        <Setter Property="Cursor" Value="Hand"/>
-        <Style.Triggers>
-            <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Foreground" Value="{StaticResource BrightGoldBrush}"/>
-            </Trigger>
-        </Style.Triggers>
-    </Style>
-
-    <!-- Rate Item DataTemplate -->
-    <DataTemplate x:Key="RateItemTemplate">
-        <StackPanel>
-            <Grid Margin="0,5">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="{Binding Name}" Style="{StaticResource GoldLabelStyle}"/>
-                <TextBlock Grid.Column="1" Text="{Binding Value, StringFormat='x{0}'}" Style="{StaticResource GoldValueStyle}"/>
-            </Grid>
-            <Border Height="1" Margin="0,3,0,3" Background="{StaticResource SeparatorGoldBrush}"/>
-        </StackPanel>
-    </DataTemplate>
 
     <!-- ================================================ -->
     <!-- WINDOW FRAME                                      -->
@@ -87,75 +41,6 @@
         <Setter Property="BorderBrush" Value="{StaticResource SeparatorGoldBrush}"/>
         <Setter Property="BorderThickness" Value="0,0,0,1"/>
         <Setter Property="Height" Value="56"/>
-    </Style>
-
-    <!-- Tab Button Base (sin estado activo) -->
-    <Style x:Key="TabButtonStyle" TargetType="Button">
-        <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
-        <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="FontFamily" Value="{StaticResource EpicSubtitleFont}"/>
-        <Setter Property="FontSize" Value="12"/>
-        <Setter Property="FontWeight" Value="Normal"/>
-        <Setter Property="Cursor" Value="Hand"/>
-        <Setter Property="Padding" Value="4,0,4,8"/>
-        <Setter Property="TextOptions.TextFormattingMode" Value="Ideal"/>
-        <Setter Property="TextOptions.TextRenderingMode" Value="ClearType"/>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="Button">
-                    <Grid>
-                        <ContentPresenter x:Name="Content"
-                                          HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"
-                                          Margin="{TemplateBinding Padding}"/>
-                        <!-- Underline indicator (hidden by default) -->
-                        <Border x:Name="Underline"
-                                Height="2"
-                                VerticalAlignment="Bottom"
-                                HorizontalAlignment="Stretch"
-                                Background="{StaticResource BrightGoldBrush}"
-                                Opacity="0"/>
-                    </Grid>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
-                        </Trigger>
-                        <Trigger Property="IsPressed" Value="True">
-                            <Setter Property="Foreground" Value="{StaticResource BrightGoldBrush}"/>
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <!-- Tab activo: foreground dorado + underline visible -->
-    <Style x:Key="ActiveTabButtonStyle" TargetType="Button" BasedOn="{StaticResource TabButtonStyle}">
-        <Setter Property="Foreground" Value="{StaticResource BrightGoldBrush}"/>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="Button">
-                    <Grid>
-                        <ContentPresenter x:Name="Content"
-                                          HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"
-                                          Margin="{TemplateBinding Padding}"/>
-                        <Border x:Name="Underline"
-                                Height="2"
-                                VerticalAlignment="Bottom"
-                                HorizontalAlignment="Stretch"
-                                Background="{StaticResource BrightGoldBrush}"
-                                Opacity="1"/>
-                    </Grid>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Foreground" Value="{StaticResource AccentGoldHighBrush}"/>
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
     </Style>
 
     <!-- Window Control Buttons (minimal flat) -->
@@ -189,42 +74,6 @@
     </Style>
 
     <!-- ================================================ -->
-    <!-- GLASS CARDS                                       -->
-    <!-- ================================================ -->
-
-    <Style x:Key="GlassCardStyle" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource GlassCardBrush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource SeparatorGoldBrush}"/>
-        <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="CornerRadius" Value="8"/>
-        <Setter Property="Effect">
-            <Setter.Value>
-                <DropShadowEffect Color="#000000" BlurRadius="20" ShadowDepth="0" Opacity="0.6"/>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <!-- News Featured Card -->
-    <Style x:Key="NewsFeaturedCardStyle" TargetType="Border" BasedOn="{StaticResource GlassCardStyle}">
-        <Setter Property="Width" Value="390"/>
-        <Setter Property="ClipToBounds" Value="True"/>
-    </Style>
-
-    <!-- Server Status Pill -->
-    <Style x:Key="ServerStatusPillStyle" TargetType="Border">
-        <Setter Property="Background" Value="#CC0D0D12"/>
-        <Setter Property="BorderBrush" Value="{StaticResource SeparatorGoldBrush}"/>
-        <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="CornerRadius" Value="8"/>
-        <Setter Property="Padding" Value="16,10"/>
-        <Setter Property="Effect">
-            <Setter.Value>
-                <DropShadowEffect Color="#000000" BlurRadius="16" ShadowDepth="0" Opacity="0.5"/>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <!-- ================================================ -->
     <!-- ACTION BAR                                        -->
     <!-- ================================================ -->
 
@@ -233,17 +82,6 @@
         <Setter Property="BorderBrush" Value="{StaticResource SeparatorGoldBrush}"/>
         <Setter Property="BorderThickness" Value="0,1,0,0"/>
         <Setter Property="Height" Value="96"/>
-    </Style>
-
-    <!-- ================================================ -->
-    <!-- SLIDE PANEL (Tasas)                               -->
-    <!-- ================================================ -->
-
-    <Style x:Key="SlidePanelStyle" TargetType="Border">
-        <Setter Property="Width" Value="280"/>
-        <Setter Property="Background" Value="#F00D0D12"/>
-        <Setter Property="BorderBrush" Value="{StaticResource SeparatorGoldBrush}"/>
-        <Setter Property="BorderThickness" Value="1,0,0,0"/>
     </Style>
 
     <!-- ================================================ -->
@@ -474,29 +312,5 @@
             </Setter.Value>
         </Setter>
     </Style>
-
-    <!-- Progress Shimmer (legacy compat) -->
-    <Storyboard x:Key="ProgressShimmerAnimation" RepeatBehavior="Forever">
-        <DoubleAnimation Storyboard.TargetProperty="(Rectangle.Fill).(LinearGradientBrush.Transform).(TranslateTransform.X)"
-                         From="-200" To="200" Duration="0:0:1.2"/>
-    </Storyboard>
-
-    <!-- ================================================ -->
-    <!-- LEGACY STYLES (kept for compat, not used in UI)  -->
-    <!-- ================================================ -->
-
-    <Style x:Key="PlayButtonStyle" TargetType="Button" BasedOn="{StaticResource ModernPlayButtonStyle}"/>
-
-    <Style x:Key="ProgressBarStyle" TargetType="ProgressBar" BasedOn="{StaticResource ModernProgressBarStyle}"/>
-
-    <Style x:Key="ServerItemStyle" TargetType="Border" BasedOn="{StaticResource GlassCardStyle}"/>
-
-    <Style x:Key="NewsItemStyle" TargetType="Border" BasedOn="{StaticResource GlassCardStyle}"/>
-
-    <Style x:Key="GoldBorderStyle" TargetType="Border">
-        <Setter Property="BorderBrush" Value="{StaticResource GoldGradientBrush}"/>
-    </Style>
-
-    <Style x:Key="GoldBorderTexturedStyle" TargetType="Border" BasedOn="{StaticResource GoldBorderStyle}"/>
 
 </ResourceDictionary>

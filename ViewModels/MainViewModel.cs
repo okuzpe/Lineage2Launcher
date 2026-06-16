@@ -98,37 +98,23 @@ namespace L2TitanLauncher.ViewModels
                     if (app == null)
                         return;
 
+                    // Un único marshalling al hilo de UI: actualizar brushes primero y
+                    // notificar cada propiedad una sola vez. Seguro porque los brushes están
+                    // Freeze()-ados (sin riesgo de threading) y los setters de brush ya filtran
+                    // cambios; el doble Invoke con prioridad Loaded era código defensivo redundante.
                     app.Dispatcher.Invoke(() =>
                     {
+                        UpdateButtonBrushes();
+
                         OnPropertyChanged(nameof(CurrentButtonState));
                         OnPropertyChanged(nameof(ButtonText));
                         OnPropertyChanged(nameof(IsPlayEnabled));
                         OnPropertyChanged(nameof(IsPaused));
                         OnPropertyChanged(nameof(IsReady));
-
-                        UpdateButtonBrushes();
-
                         OnPropertyChanged(nameof(ButtonBackgroundBrush));
                         OnPropertyChanged(nameof(ButtonBorderBrush));
                         OnPropertyChanged(nameof(ButtonForegroundBrush));
-
-                        OnPropertyChanged(nameof(IsReady));
-                        OnPropertyChanged(nameof(IsPaused));
                     }, System.Windows.Threading.DispatcherPriority.Render);
-
-                    // Force UI update when state changes to Ready - do it again with higher priority
-                    if (value == ButtonState.Ready)
-                    {
-                        app.Dispatcher.Invoke(() =>
-                        {
-                            UpdateButtonBrushes();
-                            OnPropertyChanged(nameof(ButtonBackgroundBrush));
-                            OnPropertyChanged(nameof(ButtonBorderBrush));
-                            OnPropertyChanged(nameof(ButtonForegroundBrush));
-                            OnPropertyChanged(nameof(IsReady));
-                            OnPropertyChanged(nameof(IsPaused));
-                        }, System.Windows.Threading.DispatcherPriority.Loaded);
-                    }
                 }
             }
         }
@@ -280,22 +266,34 @@ namespace L2TitanLauncher.ViewModels
                 catch (Exception ex)
                 {
                     AddLog($"Auto-verification failed: {ex.Message}");
-                    string errorMessage = ex.Message.ToLower();
+                    var kind = ClassifyError(ex);
                     InvokeOnUi(() =>
                     {
-                        if (errorMessage.Contains("could not connect") || errorMessage.Contains("connection"))
-                        {
-                            CurrentButtonState = ButtonState.Disabled;
-                            StatusText = "Could not connect to server. Please try again later.";
-                        }
-                        else
-                        {
-                            CurrentButtonState = ButtonState.Disabled;
-                            StatusText = "Auto-verification failed. Click RETRY to try again.";
-                        }
+                        CurrentButtonState = ButtonState.Disabled;
+                        StatusText = kind == UpdateErrorKind.Connection
+                            ? StatusConnectionError
+                            : "Auto-verification failed. Click RETRY to try again.";
                     });
                 }
             });
+        }
+
+        // Mensajes de estado reutilizados en los catch de verificación/descarga.
+        private const string StatusConnectionError = "Could not connect to server. Please try again later.";
+        private const string StatusPermissionError = "No write permission in game folder. Move game outside Program Files.";
+
+        private enum UpdateErrorKind { Connection, Permission, Generic }
+
+        // Única copia de la heurística de clasificación de errores (antes triplicada en
+        // los catch del constructor, HandlePlayAction y StartAutoVerification).
+        private static UpdateErrorKind ClassifyError(Exception ex)
+        {
+            var m = ex.Message.ToLowerInvariant();
+            if (m.Contains("could not connect") || m.Contains("connection"))
+                return UpdateErrorKind.Connection;
+            if (m.Contains("access to the path") || m.Contains("access is denied") || m.Contains("no write permission"))
+                return UpdateErrorKind.Permission;
+            return UpdateErrorKind.Generic;
         }
 
         private async Task HandlePlayAction()
@@ -366,31 +364,28 @@ namespace L2TitanLauncher.ViewModels
                         if (ex.InnerException != null)
                             AddLog($"  Inner exception: {ex.InnerException.Message}");
 
-                        string errorMessage = ex.Message.ToLower();
-                        if (errorMessage.Contains("could not connect") || errorMessage.Contains("connection"))
+                        CurrentButtonState = ButtonState.Disabled;
+                        switch (ClassifyError(ex))
                         {
-                            MessageBox.Show("Could not connect to server.\n\nPlease check your internet connection and try again later.", "Connection Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                            CurrentButtonState = ButtonState.Disabled;
-                            StatusText = "Could not connect to server. Please try again later.";
-                        }
-                        else if (errorMessage.Contains("access to the path") || errorMessage.Contains("access is denied") || errorMessage.Contains("no write permission"))
-                        {
-                            MessageBox.Show(
-                                "The launcher cannot write files to your game folder.\n\n" +
-                                "Recommended: Move the game to a non-protected folder (for example: C:\\Games\\L2).\n" +
-                                "Alternative: Run the launcher as Administrator.\n\n" +
-                                $"Current path: {_gamePath}",
-                                "Permission Required",
-                                MessageBoxButton.OK,
-                                MessageBoxImage.Warning);
-                            CurrentButtonState = ButtonState.Disabled;
-                            StatusText = "No write permission in game folder. Move game outside Program Files.";
-                        }
-                        else
-                        {
-                            MessageBox.Show($"Error during verification: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                            CurrentButtonState = ButtonState.Disabled;
-                            StatusText = "Error occurred. Click RETRY to try again.";
+                            case UpdateErrorKind.Connection:
+                                MessageBox.Show("Could not connect to server.\n\nPlease check your internet connection and try again later.", "Connection Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                                StatusText = StatusConnectionError;
+                                break;
+                            case UpdateErrorKind.Permission:
+                                MessageBox.Show(
+                                    "The launcher cannot write files to your game folder.\n\n" +
+                                    "Recommended: Move the game to a non-protected folder (for example: C:\\Games\\L2).\n" +
+                                    "Alternative: Run the launcher as Administrator.\n\n" +
+                                    $"Current path: {_gamePath}",
+                                    "Permission Required",
+                                    MessageBoxButton.OK,
+                                    MessageBoxImage.Warning);
+                                StatusText = StatusPermissionError;
+                                break;
+                            default:
+                                MessageBox.Show($"Error during verification: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                                StatusText = "Error occurred. Click RETRY to try again.";
+                                break;
                         }
                     }
                 }
@@ -445,23 +440,20 @@ namespace L2TitanLauncher.ViewModels
                 if (ex.InnerException != null)
                     AddLog($"  Inner exception: {ex.InnerException.Message}");
 
-                string errorMessage = ex.Message.ToLower();
-                if (errorMessage.Contains("could not connect") || errorMessage.Contains("connection"))
+                CurrentButtonState = ButtonState.Disabled;
+                switch (ClassifyError(ex))
                 {
-                    CurrentButtonState = ButtonState.Disabled;
-                    StatusText = "Could not connect to server. Please try again later.";
-                    AddLog("Connection error detected. User can retry manually.");
-                }
-                else if (errorMessage.Contains("access to the path") || errorMessage.Contains("access is denied") || errorMessage.Contains("no write permission"))
-                {
-                    CurrentButtonState = ButtonState.Disabled;
-                    StatusText = "No write permission in game folder. Move game outside Program Files.";
-                    AddLog("Permission error detected. Game path likely requires admin rights.");
-                }
-                else
-                {
-                    CurrentButtonState = ButtonState.Disabled;
-                    StatusText = "Auto-verification failed. Click RETRY to try again.";
+                    case UpdateErrorKind.Connection:
+                        StatusText = StatusConnectionError;
+                        AddLog("Connection error detected. User can retry manually.");
+                        break;
+                    case UpdateErrorKind.Permission:
+                        StatusText = StatusPermissionError;
+                        AddLog("Permission error detected. Game path likely requires admin rights.");
+                        break;
+                    default:
+                        StatusText = "Auto-verification failed. Click RETRY to try again.";
+                        break;
                 }
             }
         }
