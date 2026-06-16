@@ -1,7 +1,7 @@
 using System;
 using System.Security.Cryptography;
 
-namespace L2TitanLauncher.ViewModels
+namespace L2TitanLauncher.Services
 {
     // Verificación de AUTENTICIDAD del manifiesto.
     //

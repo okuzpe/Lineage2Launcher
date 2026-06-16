@@ -40,6 +40,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Permite que el proyecto de tests acceda a los tipos internal de Services/. -->
+    <InternalsVisibleTo Include="L2TitanLauncher.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- El proyecto de tests vive en Tests/ y se compila por su propio .csproj;
+         excluirlo aquí evita que el SDK lo arrastre al build del launcher. -->
+    <Compile Remove="Tests\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- Assets: Images - Embed as Resources (only what the UI actually references) -->
     <Resource Include="Assets\images\background.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
