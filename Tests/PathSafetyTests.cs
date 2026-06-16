@@ -29,9 +29,10 @@ namespace L2TitanLauncher.Tests
         [InlineData(@"system\..\..\..\evil.dll")]           // traversal anidado que escapa
         [InlineData(@"C:\Windows\System32\evil.exe")]       // ruta absoluta
         [InlineData(@"\\server\share\evil.exe")]            // UNC
+        [InlineData(@"..\L2-evil\x.dll")]                   // hermano con prefijo común (C:\Games\L2-evil)
         public void ResolveSafePath_Traversal_OrAbsolute_Throws(string malicious)
         {
-            Assert.ThrowsAny<Exception>(() => PathSafety.ResolveSafePath(GameDir, malicious));
+            Assert.Throws<PathTraversalException>(() => PathSafety.ResolveSafePath(GameDir, malicious));
         }
 
         [Fact]

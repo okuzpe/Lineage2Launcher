@@ -39,6 +39,13 @@ def generate_manifest(game_path, output_path):
                 continue
 
             file_path = Path(root) / file
+
+            # Saltar symlinks: hashear el destino de un symlink podría introducir en el
+            # manifiesto contenido de fuera del árbol del juego (envenenamiento).
+            if file_path.is_symlink():
+                print(f"[SKIP] Symlink ignorado: {file_path}")
+                continue
+
             rel_path = file_path.relative_to(game_path)
             
             # Incluir TODOS los archivos (sin filtrar por extensión)

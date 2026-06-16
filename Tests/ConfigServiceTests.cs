@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using L2TitanLauncher.Services;
 using Xunit;
@@ -57,6 +58,56 @@ namespace L2TitanLauncher.Tests
             Directory.CreateDirectory(exe);
             try { Assert.Equal(ConfigService.DefaultInstallPath, ConfigService.ResolveGamePath(@"C:\nope", exe)); }
             finally { SafeDelete(exe); }
+        }
+
+        [Fact]
+        public void ResolveFrom_UrlHttp_SeRechazaADefault_YSeLoguea()
+        {
+            var dir = NewTempDir();
+            Directory.CreateDirectory(dir);
+            var cfg = Path.Combine(dir, "config.json");
+            File.WriteAllText(cfg, @"{""ServerUrl"":""http://evil.example"",""ManifestUrl"":""http://evil.example/m.json""}");
+            var logs = new List<string>();
+            try
+            {
+                var r = new ConfigService().ResolveFrom(cfg, dir, logs.Add);
+                Assert.Equal(ConfigService.DefaultServerUrl, r.ServerUrl);
+                Assert.StartsWith("https://", r.ManifestUrl);
+                Assert.Contains(logs, l => l.Contains("Insecure ServerUrl"));
+            }
+            finally { SafeDelete(dir); }
+        }
+
+        [Fact]
+        public void ResolveFrom_JsonCorrupto_NoLanza_UsaDefaults()
+        {
+            var dir = NewTempDir();
+            Directory.CreateDirectory(dir);
+            var cfg = Path.Combine(dir, "config.json");
+            File.WriteAllText(cfg, "{ esto no es json válido ");
+            var logs = new List<string>();
+            try
+            {
+                var r = new ConfigService().ResolveFrom(cfg, dir, logs.Add);
+                Assert.Equal(ConfigService.DefaultServerUrl, r.ServerUrl);
+                Assert.Equal(ConfigService.DefaultInstallPath, r.GamePath);
+            }
+            finally { SafeDelete(dir); }
+        }
+
+        [Fact]
+        public void ResolveFrom_SinConfig_DevuelveDefaults()
+        {
+            var dir = NewTempDir();
+            Directory.CreateDirectory(dir);
+            var logs = new List<string>();
+            try
+            {
+                var r = new ConfigService().ResolveFrom(null, dir, logs.Add);
+                Assert.Equal(ConfigService.DefaultServerUrl, r.ServerUrl);
+                Assert.Equal(ConfigService.DefaultInstallPath, r.GamePath);
+            }
+            finally { SafeDelete(dir); }
         }
 
         private static string NewTempDir() =>

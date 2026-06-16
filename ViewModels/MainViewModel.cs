@@ -30,7 +30,8 @@ namespace L2TitanLauncher.ViewModels
     {
         private int _progress;
         private string _statusText = "Ready to verify";
-        private ButtonState _currentButtonState = ButtonState.Disabled;
+        // volatile: se lee desde IUpdateHost en hilos de fondo y se escribe desde la UI.
+        private volatile ButtonState _currentButtonState = ButtonState.Disabled;
         // volatile: lo escribe el hilo de UI (pausa/reanuda) y lo leen bucles de espera
         // en hilos de fondo (UpdateService); evita lectura rancia.
         private volatile bool _isDownloadPaused = false;
@@ -266,7 +267,7 @@ namespace L2TitanLauncher.ViewModels
                 catch (Exception ex)
                 {
                     AddLog($"Auto-verification failed: {ex.Message}");
-                    var kind = ClassifyError(ex);
+                    var kind = ErrorClassifier.Classify(ex);
                     InvokeOnUi(() =>
                     {
                         CurrentButtonState = ButtonState.Disabled;
@@ -281,20 +282,6 @@ namespace L2TitanLauncher.ViewModels
         // Mensajes de estado reutilizados en los catch de verificación/descarga.
         private const string StatusConnectionError = "Could not connect to server. Please try again later.";
         private const string StatusPermissionError = "No write permission in game folder. Move game outside Program Files.";
-
-        private enum UpdateErrorKind { Connection, Permission, Generic }
-
-        // Única copia de la heurística de clasificación de errores (antes triplicada en
-        // los catch del constructor, HandlePlayAction y StartAutoVerification).
-        private static UpdateErrorKind ClassifyError(Exception ex)
-        {
-            var m = ex.Message.ToLowerInvariant();
-            if (m.Contains("could not connect") || m.Contains("connection"))
-                return UpdateErrorKind.Connection;
-            if (m.Contains("access to the path") || m.Contains("access is denied") || m.Contains("no write permission"))
-                return UpdateErrorKind.Permission;
-            return UpdateErrorKind.Generic;
-        }
 
         private async Task HandlePlayAction()
         {
@@ -365,7 +352,7 @@ namespace L2TitanLauncher.ViewModels
                             AddLog($"  Inner exception: {ex.InnerException.Message}");
 
                         CurrentButtonState = ButtonState.Disabled;
-                        switch (ClassifyError(ex))
+                        switch (ErrorClassifier.Classify(ex))
                         {
                             case UpdateErrorKind.Connection:
                                 MessageBox.Show("Could not connect to server.\n\nPlease check your internet connection and try again later.", "Connection Error", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -441,7 +428,7 @@ namespace L2TitanLauncher.ViewModels
                     AddLog($"  Inner exception: {ex.InnerException.Message}");
 
                 CurrentButtonState = ButtonState.Disabled;
-                switch (ClassifyError(ex))
+                switch (ErrorClassifier.Classify(ex))
                 {
                     case UpdateErrorKind.Connection:
                         StatusText = StatusConnectionError;
@@ -538,23 +525,16 @@ namespace L2TitanLauncher.ViewModels
             }
         }
 
-        private readonly List<string> _logMessages = new();
-        public string LogText => string.Join("\n", _logMessages);
-
+        // Logging de diagnóstico: solo a Debug/consola. Ninguna UI observa los logs, así que
+        // NO se marshala al hilo de UI (antes hacía un Dispatcher.Invoke síncrono por cada línea,
+        // round-trip innecesario durante verificaciones/descargas de miles de archivos).
         public void AddLog(string message)
         {
+            var line = $"[{DateTime.Now:HH:mm:ss}] {message}";
 #if DEBUG
-            Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] {message}");
+            Console.WriteLine(line);
 #endif
-            var app = Application.Current;
-            if (app == null) return;
-            app.Dispatcher.Invoke(() =>
-            {
-                _logMessages.Add($"[{DateTime.Now:HH:mm:ss}] {message}");
-                if (_logMessages.Count > 100)
-                    _logMessages.RemoveAt(0);
-                OnPropertyChanged(nameof(LogText));
-            });
+            System.Diagnostics.Debug.WriteLine(line);
         }
 
         public void AddLog(string message, Exception exception)

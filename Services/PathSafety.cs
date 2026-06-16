@@ -20,7 +20,7 @@ namespace L2TitanLauncher.Services
             if (Path.IsPathRooted(relativePath) ||
                 !full.StartsWith(baseDir, StringComparison.OrdinalIgnoreCase))
             {
-                throw new Exception($"Manifest path escapes install directory: {relativePath}");
+                throw new PathTraversalException($"Manifest path escapes install directory: {relativePath}");
             }
             return full;
         }
@@ -68,5 +68,12 @@ namespace L2TitanLauncher.Services
                    fullPath.StartsWith(programFilesX86, StringComparison.OrdinalIgnoreCase) ||
                    fullPath.StartsWith(windowsDir, StringComparison.OrdinalIgnoreCase);
         }
+    }
+
+    // Lanzada cuando una ruta del manifiesto intenta escapar del directorio del juego
+    // (traversal, absoluta o hermano-con-prefijo-común). Tipo dedicado para tests claros.
+    internal sealed class PathTraversalException : Exception
+    {
+        public PathTraversalException(string message) : base(message) { }
     }
 }

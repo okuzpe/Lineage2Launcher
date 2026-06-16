@@ -6,7 +6,7 @@ namespace L2TitanLauncher.Services
 {
     // Carga y resolución de config.json. La lógica de decisión (esquema https,
     // elección de GamePath) está en métodos estáticos puros para poder testearse;
-    // la orquestación con disco vive en Resolve()/LoadRaw().
+    // la resolución sin efectos de disco vive en ResolveFrom (también testeable).
     internal sealed class ConfigService
     {
         public const string DefaultServerUrl = "https://downloads.l2-titan.com";
@@ -66,9 +66,41 @@ namespace L2TitanLauncher.Services
             return null;
         }
 
-        // Resuelve la configuración efectiva (GamePath/ServerUrl/ManifestUrl), creando un
-        // config.json por defecto si no existe. log() recibe los mensajes (los muestra el VM).
+        // Resuelve la configuración efectiva, creando un config.json por defecto si no existe.
         public ResolvedConfig Resolve(Action<string> log)
+        {
+            string exeDir = AppContext.BaseDirectory ?? Environment.CurrentDirectory;
+            string? configPath = FindConfigFile();
+            var result = ResolveFrom(configPath, exeDir, log);
+
+            // Si no había config, crear uno por defecto (efecto de disco, fuera del núcleo testeable).
+            if (configPath == null)
+            {
+                try
+                {
+                    string appDataPath = Path.Combine(
+                        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Lineage2Launcher");
+                    Directory.CreateDirectory(appDataPath);
+                    string defaultConfigPath = Path.Combine(appDataPath, "config.json");
+                    var defaultConfig = new LauncherConfig
+                    {
+                        GamePath = result.GamePath,
+                        ServerUrl = result.ServerUrl,
+                        ManifestUrl = result.ManifestUrl,
+                        GameExecutable = "system\\L2.exe",
+                        GameParameters = ""
+                    };
+                    File.WriteAllText(defaultConfigPath, JsonConvert.SerializeObject(defaultConfig, Formatting.Indented));
+                    log($"config.json file created at: {defaultConfigPath}");
+                }
+                catch (Exception ex) { log($"Error creating default config: {ex.Message}"); }
+            }
+            return result;
+        }
+
+        // Núcleo SIN efectos de disco (no crea archivos): resuelve la config efectiva desde un
+        // configPath dado (o defaults si es null/inexistente). Testeable plantando un config.json.
+        internal ResolvedConfig ResolveFrom(string? configPath, string exeDir, Action<string> log)
         {
             var result = new ResolvedConfig
             {
@@ -79,9 +111,6 @@ namespace L2TitanLauncher.Services
 
             try
             {
-                string exeDir = AppContext.BaseDirectory ?? Environment.CurrentDirectory;
-                string? configPath = FindConfigFile();
-
                 if (configPath != null && File.Exists(configPath))
                 {
                     var config = JsonConvert.DeserializeObject<LauncherConfig>(File.ReadAllText(configPath));
@@ -128,24 +157,6 @@ namespace L2TitanLauncher.Services
                 else
                 {
                     result.GamePath = PathSafety.LooksLikeLineageClient(exeDir) ? exeDir : DefaultInstallPath;
-
-                    string appDataPath = Path.Combine(
-                        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                        "Lineage2Launcher"
-                    );
-                    Directory.CreateDirectory(appDataPath);
-                    string defaultConfigPath = Path.Combine(appDataPath, "config.json");
-
-                    var defaultConfig = new LauncherConfig
-                    {
-                        GamePath = result.GamePath,
-                        ServerUrl = result.ServerUrl,
-                        ManifestUrl = result.ManifestUrl,
-                        GameExecutable = "system\\L2.exe",
-                        GameParameters = ""
-                    };
-                    File.WriteAllText(defaultConfigPath, JsonConvert.SerializeObject(defaultConfig, Formatting.Indented));
-                    log($"config.json file created at: {defaultConfigPath}");
                 }
             }
             catch (Exception ex)
