@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
@@ -25,13 +23,6 @@ namespace L2TitanLauncher.ViewModels
         Disabled
     }
 
-    public enum AppTab
-    {
-        Home,
-        News,
-        Rates
-    }
-
     public class MainViewModel : INotifyPropertyChanged
     {
         private int _progress;
@@ -44,14 +35,11 @@ namespace L2TitanLauncher.ViewModels
         private List<FileManifest> _fileManifest = new();
         private HttpClient _httpClient = new();
         private readonly System.Threading.CancellationTokenSource _cts = new();
-        
+
         // Cached brushes - updated when state changes
         private Brush _buttonBackgroundBrush = Brushes.Transparent;
         private Brush _buttonBorderBrush = Brushes.Transparent;
         private Brush _buttonForegroundBrush = Brushes.Transparent;
-
-        private const string StatusApiUrl = "https://l2-titan.com/status";
-        private const int StatusPollIntervalSeconds = 30;
 
         public string VersionText
         {
@@ -61,47 +49,6 @@ namespace L2TitanLauncher.ViewModels
                 return version != null ? $"LAUNCHER v.{version.Major}.{version.Minor}.{version.Build}" : "LAUNCHER";
             }
         }
-
-        private bool _isGameOnline;
-        public bool IsGameOnline
-        {
-            get => _isGameOnline;
-            private set { if (_isGameOnline != value) { _isGameOnline = value; OnPropertyChanged(); OnPropertyChanged(nameof(GameStatusBrush)); OnPropertyChanged(nameof(GameStatusText)); } }
-        }
-
-        private bool _isLoginOnline;
-        public bool IsLoginOnline
-        {
-            get => _isLoginOnline;
-            private set { if (_isLoginOnline != value) { _isLoginOnline = value; OnPropertyChanged(); OnPropertyChanged(nameof(LoginStatusBrush)); OnPropertyChanged(nameof(LoginStatusText)); } }
-        }
-
-        private bool _isDownloadsOnline;
-        public bool IsDownloadsOnline
-        {
-            get => _isDownloadsOnline;
-            private set { if (_isDownloadsOnline != value) { _isDownloadsOnline = value; OnPropertyChanged(); OnPropertyChanged(nameof(DownloadsStatusBrush)); OnPropertyChanged(nameof(DownloadsStatusText)); } }
-        }
-
-        public Brush GameStatusBrush => IsGameOnline
-            ? new SolidColorBrush(Color.FromRgb(0x00, 0xCC, 0x44))
-            : new SolidColorBrush(Color.FromRgb(0xCC, 0x22, 0x22));
-
-        public Brush LoginStatusBrush => IsLoginOnline
-            ? new SolidColorBrush(Color.FromRgb(0x00, 0xCC, 0x44))
-            : new SolidColorBrush(Color.FromRgb(0xCC, 0x22, 0x22));
-
-        public Brush DownloadsStatusBrush => IsDownloadsOnline
-            ? new SolidColorBrush(Color.FromRgb(0x00, 0xCC, 0x44))
-            : new SolidColorBrush(Color.FromRgb(0xCC, 0x22, 0x22));
-
-        public string GameStatusText => IsGameOnline ? "Online" : "Offline";
-        public string LoginStatusText => IsLoginOnline ? "Online" : "Offline";
-        public string DownloadsStatusText => IsDownloadsOnline ? "Online" : "Offline";
-
-        public ObservableCollection<ServerViewModel> Servers { get; } = new();
-        public ObservableCollection<NewsItem> News { get; } = new();
-        public ServerRatesViewModel ServerRates { get; } = new();
 
         public int Progress
         {
@@ -157,21 +104,21 @@ namespace L2TitanLauncher.ViewModels
                         var oldBg = _buttonBackgroundBrush;
                         var oldBorder = _buttonBorderBrush;
                         var oldFg = _buttonForegroundBrush;
-                        
+
                         // Update brushes
                         UpdateButtonBrushes();
-                        
+
                         // Force property change notifications explicitly
                         // This ensures WPF re-evaluates the bindings
                         OnPropertyChanged(nameof(ButtonBackgroundBrush));
                         OnPropertyChanged(nameof(ButtonBorderBrush));
                         OnPropertyChanged(nameof(ButtonForegroundBrush));
-                        
+
                         // Also notify dependent properties
                         OnPropertyChanged(nameof(IsReady));
                         OnPropertyChanged(nameof(IsPaused));
                     }, System.Windows.Threading.DispatcherPriority.Render);
-                    
+
                     // Force UI update when state changes to Ready - do it again with higher priority
                     if (value == ButtonState.Ready)
                     {
@@ -207,14 +154,14 @@ namespace L2TitanLauncher.ViewModels
 
         // Botón habilitado cuando está Ready, Downloading, Paused o Disabled (NO cuando está Checking)
         // Permite reintentar cuando falla la auto-verificación
-        public bool IsPlayEnabled => CurrentButtonState == ButtonState.Ready || 
-                                     CurrentButtonState == ButtonState.Downloading || 
+        public bool IsPlayEnabled => CurrentButtonState == ButtonState.Ready ||
+                                     CurrentButtonState == ButtonState.Downloading ||
                                      CurrentButtonState == ButtonState.Paused ||
                                      CurrentButtonState == ButtonState.Disabled;
 
         // Propiedad para detectar si está pausado (para aplicar estilo gris)
         public bool IsPaused => CurrentButtonState == ButtonState.Paused;
-        
+
         // Propiedad para detectar si está listo (para aplicar estilo dorado)
         public bool IsReady => CurrentButtonState == ButtonState.Ready;
 
@@ -257,20 +204,20 @@ namespace L2TitanLauncher.ViewModels
                 }
             }
         }
-        
+
         private void UpdateButtonBrushes()
         {
             // Get new brushes
             var newBg = GetBackgroundBrushForState(CurrentButtonState);
             var newBorder = GetBorderBrushForState(CurrentButtonState);
             var newFg = GetForegroundBrushForState(CurrentButtonState);
-            
+
             // Always update, even if the brush looks the same, to force WPF to re-evaluate
             // This is important because WPF may cache brush references
             _buttonBackgroundBrush = newBg;
             _buttonBorderBrush = newBorder;
             _buttonForegroundBrush = newFg;
-            
+
             // The OnPropertyChanged will be called explicitly after this method
         }
 
@@ -341,79 +288,23 @@ namespace L2TitanLauncher.ViewModels
         }
 
         public ICommand PlayCommand { get; }
-        public ICommand PauseCommand { get; }
-        public ICommand ResumeCommand { get; }
         public ICommand OpenSupportCommand { get; }
-        public ICommand OpenForumCommand { get; }
         public ICommand OpenDiscordCommand { get; }
         public ICommand OpenTikTokCommand { get; }
-
-        // === Tab navigation ===
-        public ICommand NavigateToHomeCommand { get; }
-        public ICommand NavigateToNewsCommand { get; }
-        public ICommand ToggleRatesPanelCommand { get; }
-        public ICommand NextNewsCommand { get; }
-        public ICommand PreviousNewsCommand { get; }
 
         public MainViewModel()
         {
             _httpClient.Timeout = TimeSpan.FromMinutes(30);
             LoadConfiguration();
-            InitializeMockData();
-            
+
             // Initialize button brushes with default state
             UpdateButtonBrushes();
-            
+
             // Usar AsyncRelayCommand para manejar correctamente métodos async
             PlayCommand = new AsyncRelayCommand(async () => await HandlePlayAction(), () => IsPlayEnabled);
-            PauseCommand = new RelayCommand(() => { _isDownloadPaused = true; CurrentButtonState = ButtonState.Paused; AddLog("Download paused by user."); });
-            ResumeCommand = new RelayCommand(() => { _isDownloadPaused = false; CurrentButtonState = ButtonState.Downloading; AddLog("Download resumed by user."); });
             OpenSupportCommand = new RelayCommand(() => System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = "https://l2-titan.com/", UseShellExecute = true }));
-            OpenForumCommand = new RelayCommand(() => System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = "https://forum.example.com", UseShellExecute = true }));
             OpenDiscordCommand = new RelayCommand(() => System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = "https://discord.gg/xH76F9vsGf", UseShellExecute = true }));
             OpenTikTokCommand = new RelayCommand(() => System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = "https://www.tiktok.com/@omar781002", UseShellExecute = true }));
-
-            // Tab navigation & carousel
-            NavigateToHomeCommand = new RelayCommand(() => CurrentTab = AppTab.Home);
-            NavigateToNewsCommand = new RelayCommand(() => CurrentTab = AppTab.News);
-            ToggleRatesPanelCommand = new RelayCommand(() => IsRatesPanelOpen = !IsRatesPanelOpen);
-            NextNewsCommand = new RelayCommand(() =>
-            {
-                if (News.Count > 0) CurrentNewsIndex = (CurrentNewsIndex + 1) % News.Count;
-            });
-            PreviousNewsCommand = new RelayCommand(() =>
-            {
-                if (News.Count > 0) CurrentNewsIndex = (CurrentNewsIndex - 1 + News.Count) % News.Count;
-            });
-            
-            // Initialize news page indicator dots
-            for (int i = 0; i < News.Count; i++)
-                NewsPageIndicators.Add(new NewsPageDot { IsActive = i == 0 });
-
-            // News auto-advance every 10 seconds
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    while (!_cts.IsCancellationRequested)
-                    {
-                        await Task.Delay(TimeSpan.FromSeconds(10), _cts.Token);
-                        Application.Current?.Dispatcher.Invoke(() =>
-                        {
-                            if (News.Count > 0)
-                                CurrentNewsIndex = (CurrentNewsIndex + 1) % News.Count;
-                        });
-                    }
-                }
-                catch (OperationCanceledException) { }
-            }, _cts.Token);
-
-            // Fetch server status immediately and start polling
-            _ = Task.Run(async () =>
-            {
-                await FetchServerStatus();
-                _ = PollServerStatusLoop();
-            }, _cts.Token);
 
             // Auto-start verification - no bloquear si falla
             _ = Task.Run(async () =>
@@ -444,79 +335,11 @@ namespace L2TitanLauncher.ViewModels
             });
         }
 
-        private async Task FetchServerStatus()
-        {
-            try
-            {
-                var json = await _httpClient.GetStringAsync(StatusApiUrl, _cts.Token);
-                var status = JsonConvert.DeserializeObject<ServerStatusResponse>(json);
-                if (status != null)
-                {
-                    Application.Current?.Dispatcher.Invoke(() =>
-                    {
-                        IsGameOnline = string.Equals(status.Game, "online", StringComparison.OrdinalIgnoreCase);
-                        IsLoginOnline = string.Equals(status.Login, "online", StringComparison.OrdinalIgnoreCase);
-                        IsDownloadsOnline = true;
-                    });
-                }
-            }
-            catch (OperationCanceledException) { }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Status fetch error: {ex.Message}");
-                Application.Current?.Dispatcher.Invoke(() =>
-                {
-                    IsGameOnline = false;
-                    IsLoginOnline = false;
-                    IsDownloadsOnline = false;
-                });
-            }
-        }
-
-        private async Task PollServerStatusLoop()
-        {
-            try
-            {
-                while (!_cts.IsCancellationRequested)
-                {
-                    await Task.Delay(TimeSpan.FromSeconds(StatusPollIntervalSeconds), _cts.Token);
-                    await FetchServerStatus();
-                }
-            }
-            catch (OperationCanceledException) { }
-        }
-
-        private void InitializeMockData()
-        {
-            // Mock News
-            News.Add(new NewsItem 
-            { 
-                Date = DateTime.Now.AddDays(-2), 
-                Title = "New Update Available!", 
-                Summary = "Check out the latest features and improvements in version 2.0",
-                ImageUrl = ""
-            });
-            News.Add(new NewsItem 
-            { 
-                Date = DateTime.Now.AddDays(-5), 
-                Title = "Server Maintenance", 
-                Summary = "Scheduled maintenance completed successfully. All servers are now online.",
-                ImageUrl = ""
-            });
-            News.Add(new NewsItem 
-            { 
-                Date = DateTime.Now.AddDays(-10), 
-                Title = "Welcome to L2Titan", 
-                Summary = "Join thousands of players in the epic world of Lineage 2",
-                ImageUrl = ""
-            });
-        }
-
         private async Task HandlePlayAction()
         {
             AddLog("=== Play button clicked ===");
             System.Diagnostics.Debug.WriteLine("Play button clicked - HandlePlayAction started");
-            
+
             try
             {
                 if (CurrentButtonState == ButtonState.Ready)
@@ -549,11 +372,11 @@ namespace L2TitanLauncher.ViewModels
                     System.Diagnostics.Debug.WriteLine($"Current state: {CurrentButtonState} - Starting verification");
                     System.Diagnostics.Debug.WriteLine($"Manifest URL: {_manifestUrl}");
                     System.Diagnostics.Debug.WriteLine($"Game Path: {_gamePath}");
-                    
+
                     Progress = 0;
                     CurrentButtonState = ButtonState.Checking;
                     StatusText = "Connecting to server...";
-                    
+
                     try
                     {
                         // Run verification/hashing on a background thread. This command
@@ -589,13 +412,13 @@ namespace L2TitanLauncher.ViewModels
                         AddLog($"✗ Error during verification: {ex.Message}");
                         System.Diagnostics.Debug.WriteLine($"Verification error: {ex.Message}");
                         System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
-                        
+
                         if (ex.InnerException != null)
                         {
                             AddLog($"  Inner exception: {ex.InnerException.Message}");
                             System.Diagnostics.Debug.WriteLine($"Inner exception: {ex.InnerException.Message}");
                         }
-                        
+
                         // Detectar si es un error de conexión
                         string errorMessage = ex.Message.ToLower();
                         if (errorMessage.Contains("could not connect") || errorMessage.Contains("connection"))
@@ -636,18 +459,18 @@ namespace L2TitanLauncher.ViewModels
                 AddLog($"✗ Unexpected error in HandlePlayAction: {ex.Message}");
                 System.Diagnostics.Debug.WriteLine($"Unexpected error in HandlePlayAction: {ex.Message}");
                 System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
-                
+
                 if (ex.InnerException != null)
                 {
                     AddLog($"  Inner exception: {ex.InnerException.Message}");
                     System.Diagnostics.Debug.WriteLine($"Inner exception: {ex.InnerException.Message}");
                 }
-                
+
                 MessageBox.Show($"Unexpected error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 CurrentButtonState = ButtonState.Disabled;
                 StatusText = "Error occurred. Click PLAY to retry.";
             }
-            
+
             System.Diagnostics.Debug.WriteLine("HandlePlayAction completed");
         }
 
@@ -686,7 +509,7 @@ namespace L2TitanLauncher.ViewModels
                 {
                     AddLog($"  Inner exception: {ex.InnerException.Message}");
                 }
-                
+
                 // Detectar si es un error de conexión
                 string errorMessage = ex.Message.ToLower();
                 if (errorMessage.Contains("could not connect") || errorMessage.Contains("connection"))
@@ -716,9 +539,9 @@ namespace L2TitanLauncher.ViewModels
                 // Use AppContext.BaseDirectory for single-file apps compatibility
                 string exeDir = AppContext.BaseDirectory ?? Environment.CurrentDirectory;
                 string defaultInstallPath = @"C:\Juegos\Lineage2";
-                
+
                 string? configPath = FindConfigFile();
-                
+
                 if (configPath != null && File.Exists(configPath))
                 {
                     var config = JsonConvert.DeserializeObject<LauncherConfig>(File.ReadAllText(configPath));
@@ -778,14 +601,14 @@ namespace L2TitanLauncher.ViewModels
                     _gamePath = LooksLikeLineageClient(exeDir) ? exeDir : defaultInstallPath;
                     _serverUrl = "https://downloads.l2-titan.com";
                     _manifestUrl = $"{_serverUrl}/manifest.json";
-                    
+
                     string appDataPath = Path.Combine(
                         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                         "Lineage2Launcher"
                     );
                     Directory.CreateDirectory(appDataPath);
                     string defaultConfigPath = Path.Combine(appDataPath, "config.json");
-                    
+
                     var defaultConfig = new LauncherConfig
                     {
                         GamePath = _gamePath,
@@ -920,7 +743,7 @@ namespace L2TitanLauncher.ViewModels
                     {
                         // Detectar si es un error de conexión
                         string errorMessage = ex.Message.ToLower();
-                        if (errorMessage.Contains("connection") || errorMessage.Contains("timeout") || 
+                        if (errorMessage.Contains("connection") || errorMessage.Contains("timeout") ||
                             errorMessage.Contains("network") || errorMessage.Contains("resolve") ||
                             errorMessage.Contains("refused") || errorMessage.Contains("unreachable"))
                         {
@@ -1352,7 +1175,7 @@ namespace L2TitanLauncher.ViewModels
                 string errorMessage = ex.Message;
                 if (ex.InnerException != null)
                     errorMessage += $"\n\nInner exception: {ex.InnerException.Message}";
-                
+
                 MessageBox.Show($"Error starting game: {errorMessage}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 AddLog($"Error: {errorMessage}");
             }
@@ -1387,70 +1210,6 @@ namespace L2TitanLauncher.ViewModels
                 fullMessage += $"\n  Stack Trace: {exception.StackTrace}";
             }
             AddLog(fullMessage);
-        }
-
-        // === Tab Navigation Properties ===
-        private AppTab _currentTab = AppTab.Home;
-        public AppTab CurrentTab
-        {
-            get => _currentTab;
-            set
-            {
-                if (_currentTab != value)
-                {
-                    _currentTab = value;
-                    OnPropertyChanged();
-                    OnPropertyChanged(nameof(IsHomeTabActive));
-                    OnPropertyChanged(nameof(IsNewsTabActive));
-                    OnPropertyChanged(nameof(IsRatesTabActive));
-                }
-            }
-        }
-
-        public bool IsHomeTabActive => CurrentTab == AppTab.Home;
-        public bool IsNewsTabActive => CurrentTab == AppTab.News;
-        public bool IsRatesTabActive => CurrentTab == AppTab.Rates;
-
-        // === Rates Panel ===
-        private bool _isRatesPanelOpen;
-        public bool IsRatesPanelOpen
-        {
-            get => _isRatesPanelOpen;
-            set
-            {
-                if (_isRatesPanelOpen != value)
-                {
-                    _isRatesPanelOpen = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        // === News Carousel ===
-        private int _currentNewsIndex;
-        public int CurrentNewsIndex
-        {
-            get => _currentNewsIndex;
-            set
-            {
-                if (_currentNewsIndex != value)
-                {
-                    _currentNewsIndex = value;
-                    OnPropertyChanged();
-                    OnPropertyChanged(nameof(CurrentNewsItem));
-                    UpdateNewsPageIndicators();
-                }
-            }
-        }
-
-        public NewsItem? CurrentNewsItem => News.Count > 0 ? News[_currentNewsIndex % News.Count] : null;
-
-        public ObservableCollection<NewsPageDot> NewsPageIndicators { get; } = new();
-
-        private void UpdateNewsPageIndicators()
-        {
-            for (int i = 0; i < NewsPageIndicators.Count; i++)
-                NewsPageIndicators[i].IsActive = (i == _currentNewsIndex % News.Count);
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
@@ -1500,17 +1259,4 @@ namespace L2TitanLauncher.ViewModels
         public string Hash { get; set; } = string.Empty;
         public long Size { get; set; }
     }
-
-    public class ServerStatusResponse
-    {
-        [JsonProperty("game")]
-        public string Game { get; set; } = string.Empty;
-
-        [JsonProperty("login")]
-        public string Login { get; set; } = string.Empty;
-
-        [JsonProperty("timestamp")]
-        public DateTime? Timestamp { get; set; }
-    }
 }
-
