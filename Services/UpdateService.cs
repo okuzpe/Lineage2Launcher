@@ -70,7 +70,7 @@ namespace L2TitanLauncher.Services
                     System.Diagnostics.Debug.WriteLine($"Manifest download attempt {i + 1} failed: {ex.Message}");
                     if (i == manifestRetries - 1)
                     {
-                        string errorMessage = ex.Message.ToLower();
+                        string errorMessage = ex.Message.ToLowerInvariant();
                         if (errorMessage.Contains("connection") || errorMessage.Contains("timeout") ||
                             errorMessage.Contains("network") || errorMessage.Contains("resolve") ||
                             errorMessage.Contains("refused") || errorMessage.Contains("unreachable"))
@@ -96,7 +96,7 @@ namespace L2TitanLauncher.Services
                 throw new LauncherError("The update manifest from the server is corrupted or invalid. Please try again later or contact support.");
             }
 
-            if (fileManifest == null || fileManifest.Count == 0)
+            if (fileManifest.Count == 0)
                 throw new LauncherError("The manifest is empty or invalid.");
 
             host.Log($"✓ Manifest downloaded successfully.");
@@ -176,9 +176,11 @@ namespace L2TitanLauncher.Services
 
             foreach (var fileInfo in fileManifest)
             {
-                while (host.IsPaused)
+                // Esperar mientras esté pausado, pero observando la cancelación para no dejar
+                // un Task de fondo en busy-wait si se cierra estando pausado entre archivos.
+                while (host.IsPaused && !host.Token.IsCancellationRequested)
                 {
-                    await Task.Delay(100);
+                    await Task.Delay(100, host.Token);
                 }
 
                 host.Token.ThrowIfCancellationRequested();

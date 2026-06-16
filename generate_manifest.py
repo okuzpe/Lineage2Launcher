@@ -30,8 +30,8 @@ def generate_manifest(game_path, output_path):
         dirs[:] = [d for d in dirs if d not in {'logs', 'screenshots', 'temp', '__pycache__'}]
         
         for file in files:
-            # Excluir manifest.json del manifest (no debe incluirse a sí mismo)
-            if file.lower() == "manifest.json":
+            # Excluir manifest.json y su firma (no deben incluirse a sí mismos como archivos del juego)
+            if file.lower() in ("manifest.json", "manifest.json.sig"):
                 continue
 
             # Excluir archivos *.log (el ZIP de deploy-simple.sh tambien los excluye)
