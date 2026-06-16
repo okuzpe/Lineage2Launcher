@@ -556,7 +556,13 @@ namespace L2TitanLauncher.ViewModels
                     
                     try
                     {
-                        await CheckAndDownloadFiles();
+                        // Run verification/hashing on a background thread. This command
+                        // executes on the UI thread (button click), so without Task.Run the
+                        // synchronous per-file SHA-256 hashing after the manifest await would
+                        // resume on the UI thread and freeze the window while verifying a
+                        // large Lineage 2 install. The auto-verification path is already wrapped
+                        // in Task.Run; this matches that behavior for the manual RETRY/PLAY path.
+                        await Task.Run(() => CheckAndDownloadFiles());
                         Application.Current.Dispatcher.Invoke(() =>
                         {
                             CurrentButtonState = ButtonState.Ready;
