@@ -223,6 +223,8 @@
                         <!-- Minimize -->
                         <Button x:Name="MinimizeButton"
                                 Content="─"
+                                ToolTip="Minimizar"
+                                AutomationProperties.Name="Minimizar"
                                 Style="{StaticResource WindowControlButtonStyle}"
                                 Click="MinimizeButton_Click"
                                 shell:WindowChrome.IsHitTestVisibleInChrome="True"
@@ -231,6 +233,8 @@
                         <!-- Maximize / Restore -->
                         <Button x:Name="MaximizeButton"
                                 Content="▢"
+                                ToolTip="Maximizar / Restaurar"
+                                AutomationProperties.Name="Maximizar o restaurar ventana"
                                 Style="{StaticResource WindowControlButtonStyle}"
                                 Click="MaximizeButton_Click"
                                 shell:WindowChrome.IsHitTestVisibleInChrome="True"
@@ -239,6 +243,8 @@
                         <!-- Close -->
                         <Button x:Name="CloseButton"
                                 Content="✕"
+                                ToolTip="Cerrar"
+                                AutomationProperties.Name="Cerrar"
                                 Style="{StaticResource WindowControlButtonStyle}"
                                 Click="CloseButton_Click"
                                 shell:WindowChrome.IsHitTestVisibleInChrome="True"

@@ -28,7 +28,9 @@ namespace L2TitanLauncher.ViewModels
         private int _progress;
         private string _statusText = "Ready to verify";
         private ButtonState _currentButtonState = ButtonState.Disabled;
-        private bool _isDownloadPaused = false;
+        // volatile: lo escribe el hilo de UI (pausa/reanuda) y lo leen bucles de espera
+        // en hilos de fondo (CheckAndDownloadFiles/DownloadFile); evita lectura rancia.
+        private volatile bool _isDownloadPaused = false;
         private string _gamePath = string.Empty;
         private string _serverUrl = string.Empty;
         private string _manifestUrl = string.Empty;
@@ -318,7 +320,7 @@ namespace L2TitanLauncher.ViewModels
                 {
                     AddLog($"Auto-verification failed: {ex.Message}");
                     string errorMessage = ex.Message.ToLower();
-                    Application.Current.Dispatcher.Invoke(() =>
+                    InvokeOnUi(() =>
                     {
                         if (errorMessage.Contains("could not connect") || errorMessage.Contains("connection"))
                         {
@@ -386,11 +388,11 @@ namespace L2TitanLauncher.ViewModels
                         // large Lineage 2 install. The auto-verification path is already wrapped
                         // in Task.Run; this matches that behavior for the manual RETRY/PLAY path.
                         await Task.Run(() => CheckAndDownloadFiles());
-                        Application.Current.Dispatcher.Invoke(() =>
+                        InvokeOnUi(() =>
                         {
                             CurrentButtonState = ButtonState.Ready;
                             StatusText = "Everything ready to play!";
-                        }, System.Windows.Threading.DispatcherPriority.Render);
+                        });
                         AddLog("✓ Verification completed successfully!");
                         System.Diagnostics.Debug.WriteLine("Verification completed successfully");
                     }
@@ -483,11 +485,11 @@ namespace L2TitanLauncher.ViewModels
             try
             {
                 await CheckAndDownloadFiles();
-                Application.Current.Dispatcher.Invoke(() =>
+                InvokeOnUi(() =>
                 {
                     CurrentButtonState = ButtonState.Ready;
                     StatusText = "Everything ready to play!";
-                }, System.Windows.Threading.DispatcherPriority.Render);
+                });
                 AddLog("✓ Auto-verification completed successfully!");
             }
             catch (OperationCanceledException) when (_cts.IsCancellationRequested)
@@ -834,12 +836,12 @@ namespace L2TitanLauncher.ViewModels
             if (filesToDownload == 0)
             {
                 AddLog("\n✓ All files are up to date!");
-                Application.Current.Dispatcher.Invoke(() =>
+                InvokeOnUi(() =>
                 {
                     Progress = 100;
                     CurrentButtonState = ButtonState.Ready;
                     StatusText = "Everything ready to play!";
-                }, System.Windows.Threading.DispatcherPriority.Render);
+                });
                 return;
             }
 
@@ -885,12 +887,12 @@ namespace L2TitanLauncher.ViewModels
             }
 
             AddLog("\n✓ Verification and download completed!");
-            Application.Current.Dispatcher.Invoke(() =>
+            InvokeOnUi(() =>
             {
                 Progress = 100;
                 CurrentButtonState = ButtonState.Ready;
                 StatusText = "Everything ready to play!";
-            }, System.Windows.Threading.DispatcherPriority.Render);
+            });
         }
 
         private async Task DownloadFile(string url, string filePath, string expectedHash, long bytesBeforeThisFile, long totalDownloadBytes)
@@ -1127,7 +1129,19 @@ namespace L2TitanLauncher.ViewModels
                         gameExecutable = config!.GameExecutable;
                 }
 
-                var exePath = Path.Combine(_gamePath, gameExecutable);
+                // Validate the configured executable stays inside the game folder: a planted
+                // config.json must not be able to launch an arbitrary absolute/traversal path as admin.
+                string exePath;
+                try
+                {
+                    exePath = ResolveSafePath(gameExecutable);
+                }
+                catch
+                {
+                    MessageBox.Show($"The configured game executable path is invalid: {gameExecutable}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    AddLog($"✗ Invalid game executable path (escapes game folder): {gameExecutable}");
+                    return;
+                }
 
                 AddLog($"Looking for game executable: {exePath}");
 
@@ -1217,6 +1231,17 @@ namespace L2TitanLauncher.ViewModels
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        // Marshal an action onto the UI thread, guarding against teardown: during window
+        // close Application.Current becomes null and a direct Dispatcher.Invoke from a
+        // background task would throw NullReferenceException. Same guard as AddLog/RaiseOnUi.
+        private static void InvokeOnUi(Action action)
+        {
+            var app = Application.Current;
+            if (app == null)
+                return;
+            app.Dispatcher.Invoke(action, System.Windows.Threading.DispatcherPriority.Render);
         }
 
         // Marshal change notifications onto the UI thread so background verify/download

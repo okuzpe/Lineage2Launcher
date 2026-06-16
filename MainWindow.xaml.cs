@@ -12,8 +12,14 @@ namespace L2TitanLauncher
         {
             InitializeComponent();
             this.Loaded += MainWindow_Loaded;
-            // Release the WebView2 host process and user-data-folder lock on close.
-            this.Closed += (s, e) => LauncherWebView?.Dispose();
+            // Release the WebView2 host process and user-data-folder lock on close,
+            // unsubscribing the navigation handler first to avoid a dangling event ref.
+            this.Closed += (s, e) =>
+            {
+                if (LauncherWebView?.CoreWebView2 != null)
+                    LauncherWebView.CoreWebView2.NavigationCompleted -= LauncherWebView_NavigationCompleted;
+                LauncherWebView?.Dispose();
+            };
         }
 
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -142,6 +148,9 @@ namespace L2TitanLauncher
                 MainBorder.Margin = WindowState == WindowState.Maximized
                     ? new Thickness(7)
                     : new Thickness(0);
+            // Reflect the current state in the glyph: restore icon when maximized.
+            if (MaximizeButton != null)
+                MaximizeButton.Content = WindowState == WindowState.Maximized ? "❐" : "▢";
         }
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)

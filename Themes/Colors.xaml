@@ -18,7 +18,8 @@
     <!-- Nuevos Colores Modernos -->
     <Color x:Key="AccentGoldHigh">#F0D98C</Color>
     <Color x:Key="TextPrimary">#EDE8DC</Color>
-    <Color x:Key="TextSecondary">#7A7068</Color>
+    <!-- Subido de #7A7068 a #9E948A para cumplir contraste WCAG AA (~4.5:1) sobre fondos casi negros -->
+    <Color x:Key="TextSecondary">#9E948A</Color>
     <Color x:Key="SurfaceGlass">#1A1C22</Color>
     <Color x:Key="TopBarBg">#0A0A0F</Color>
     <Color x:Key="ActionBarBg">#060608</Color>
