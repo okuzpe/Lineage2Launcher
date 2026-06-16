@@ -80,10 +80,10 @@ GamePath con heurística `LooksLikeLineageClient` (existe `system\L2.exe`): exe-
 - WebView2: `Source` se asigna en code-behind tras `EnsureCoreWebView2Async` (asignarlo en XAML carrea la init); `_firstNavigationHandled` hace que solo el fallo de navegación inicial muestre el fallback y que el éxito restaure el WebView; `Dispose()` en `Closed`.
 - Solo se embebe `Assets/images/background.png` + fuentes Cinzel; assets no referenciados se eliminaron (estaban inflando el exe ~10 MB).
 
-## D9 — Operación y CI
+## D9 — Operación
 
 - `deploy-simple.sh`: heredocs remotos con `set -e`, `rc=$?` capturado inmediatamente tras cada ssh, `unzip … || [ $? -eq 1 ]` (exit 1 = warning no fatal), permisos finales 644 archivos / 755 dirs. El manifest se REGENERA en cada deploy (paso 1) — el `manifest.json` del repo es solo un artefacto de referencia y está obsoleto hasta el próximo deploy.
-- CI `build-and-sign.yml`: SignPath requiere el **artifact-id numérico** (`steps.upload.outputs.artifact-id`), no el nombre.
+- **Sin CI en GitHub Actions** (eliminado 2026-06-16; el proyecto no lo usa). Verificación local: `dotnet build` + `dotnet test Tests/L2TitanLauncher.Tests.csproj`. El despliegue soportado es `./deploy.sh` (firma + verifica); `deploy-simple.sh` quedó obsoleto.
 - `StartGame`: `Verb="runas"` + handler `Win32Exception 1223` (UAC cancelado) — restaurado tras regresión; no eliminar.
 
 ## Deuda técnica registrada
