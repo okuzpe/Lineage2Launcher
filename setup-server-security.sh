@@ -71,26 +71,14 @@ fi
 chmod 600 "$AUTH_KEYS"
 chown -R "$DEPLOY_USER:$DEPLOY_USER" "$SSH_HOME"
 
-echo ">>> [3/6] sudo sin contraseña (solo comandos del deploy)..."
-# Incluye rutas /bin y /usr/bin porque deploy-simple.sh invoca ambas formas
-# (p. ej. --test-connection usa /bin/mkdir y /bin/rm explícitamente).
-cat > "$SUDOERS_FILE" <<'SUDO'
-deploy ALL=(root) NOPASSWD: /bin/mkdir, /usr/bin/mkdir, \
-                            /bin/rm, /usr/bin/rm, \
-                            /bin/mv, /usr/bin/mv, \
-                            /bin/cp, /usr/bin/cp, \
-                            /bin/chown, /usr/bin/chown, \
-                            /bin/chmod, /usr/bin/chmod, \
-                            /usr/bin/find, /usr/bin/unzip
-SUDO
-chmod 440 "$SUDOERS_FILE"
-# Validar sintaxis; si falla, borrar para no romper sudo
-if ! visudo -cf "$SUDOERS_FILE"; then
-    rm -f "$SUDOERS_FILE"
-    echo "ERROR: sudoers inválido, revertido." >&2
-    exit 1
-fi
-echo "    sudo configurado y validado."
+echo ">>> [3/6] sudo del usuario 'deploy'..."
+# Los despliegues usan ahora deploy.sh por root@22 (llave SSH), así que 'deploy' NO
+# necesita sudo. Conceder NOPASSWD genérico sobre rm/mv/cp/chown/chmod/find equivalía a
+# root de facto (hallazgo M4 de la auditoría), así que se elimina cualquier grant previo.
+# Si en el futuro 'deploy' necesitara privilegios, concede NOPASSWD solo a un wrapper de
+# deploy concreto (/usr/local/sbin/l2-deploy), nunca comandos genéricos.
+rm -f "$SUDOERS_FILE"
+echo "    'deploy' sin sudo (los deploys van por root@22 / deploy.sh)."
 
 echo ">>> [4/6] Directorios web..."
 mkdir -p "$ZIP_DIR" "$DEPLOY_DIR"

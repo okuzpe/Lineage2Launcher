@@ -1,4 +1,9 @@
 #!/bin/bash
+# ⚠️ OBSOLETO — usa ./deploy.sh en su lugar.
+# Este script exige zip+Python locales y NO firma el manifiesto (deja manifest.json.sig
+# desfasado -> el launcher rechaza la actualización). Se conserva solo como referencia.
+# El deploy soportado es ./deploy.sh (firma integrada + backup/rollback + verificación).
+#
 # Script de Deploy Simple - Paso a Paso
 # Genera manifest, comprime, sube y descomprime en el servidor
 
