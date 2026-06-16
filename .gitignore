@@ -131,3 +131,7 @@ Desktop.ini
 # Local backups — never commit (GitHub 100MB limit)
 backups/
 *.zip
+
+# Clave PRIVADA de firma del manifiesto — JAMÁS subir a git (compromete toda la cadena)
+keys/
+*.part

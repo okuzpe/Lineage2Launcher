@@ -734,12 +734,23 @@ namespace L2TitanLauncher.ViewModels
 
                     AddLog($"Downloading manifest from: {_manifestUrl}");
                     System.Diagnostics.Debug.WriteLine($"Attempting to download manifest from: {_manifestUrl}");
-                    manifestJson = await _httpClient.GetStringAsync(_manifestUrl, _cts.Token);
-                    System.Diagnostics.Debug.WriteLine($"Manifest downloaded successfully, length: {manifestJson?.Length ?? 0} characters");
+                    // Descargar bytes crudos + firma RSA y VERIFICAR autenticidad antes de
+                    // confiar en una sola entrada del manifiesto (defensa contra servidor
+                    // comprometido o MITM con CA del sistema; el SHA-256 solo no basta).
+                    var manifestBytes = await _httpClient.GetByteArrayAsync(_manifestUrl, _cts.Token);
+                    var signatureB64 = await _httpClient.GetStringAsync(_manifestUrl + ".sig", _cts.Token);
+                    if (!ManifestSecurity.Verify(manifestBytes, signatureB64))
+                        throw new LauncherError("La firma del manifiesto no es válida. Actualización cancelada por seguridad (el servidor o la conexión no son de confianza). Contacta con soporte.");
+                    manifestJson = System.Text.Encoding.UTF8.GetString(manifestBytes);
+                    AddLog("✓ Firma del manifiesto verificada.");
+                    System.Diagnostics.Debug.WriteLine($"Manifest downloaded & signature verified, length: {manifestJson?.Length ?? 0} characters");
                     break;
                 }
                 catch (Exception ex)
                 {
+                    // Firma inválida / manifiesto vacío (LauncherError) NO se reintenta:
+                    // re-descargar los mismos bytes no va a cambiar el resultado.
+                    if (ex is LauncherError) throw;
                     System.Diagnostics.Debug.WriteLine($"Manifest download attempt {i + 1} failed: {ex.Message}");
                     if (i == manifestRetries - 1)
                     {

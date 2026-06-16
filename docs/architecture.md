@@ -38,7 +38,7 @@ Registro de decisiones reales del sistema tal como está construido y auditado (
 
 **Por qué:** un launcher que descarga ejecutables sobre HTTP = RCE por MITM. Consecuencia aceptada: no se puede testear contra servidor HTTP local; usar endpoint HTTPS real o túnel.
 
-**Pendiente (D2+D3 juntas):** firma detached del manifest con clave pública embebida — elimina la confianza exclusiva en TLS/hosting.
+**Implementado (D2+D3, 2026-06-16):** firma RSA detached del manifest (`manifest.json.sig`, PKCS#1 v1.5 / SHA-256). Clave pública embebida en `ViewModels/ManifestSecurity.cs`; la privada vive solo local (`keys/`, fuera de git) y se firma con `sign-manifest.sh` tras regenerar el manifest. El cliente verifica la firma ANTES de confiar en el manifest — elimina la confianza exclusiva en TLS/hosting. Regla: si regeneras el manifest, vuelve a firmarlo o el launcher lo rechazará.
 
 ## D4 — Descarga: staging atómico + clasificación de fallos
 
@@ -89,8 +89,8 @@ GamePath con heurística `LooksLikeLineageClient` (existe `system\L2.exe`): exe-
 
 | # | Ítem | Prioridad |
 |---|------|-----------|
-| 1 | Redeploy del servidor (manifest SHA-256) — bloquea updates | ALTA, operativo |
-| 2 | Firma del manifest (clave embebida + verificación) | Alta |
+| 1 | ✅ Redeploy del servidor (manifest SHA-256) — HECHO 2026-06-16 (nginx+TLS en downloads.l2-titan.com) | — |
+| 2 | ✅ Firma del manifest (RSA, clave embebida + verificación) — HECHO 2026-06-16 | — |
 | 3 | Auto-update del launcher | Media |
 | 4 | `manifest.json` del repo obsoleto (MD5) — regenerar o quitar del repo | Baja |
 | 5 | Doble click en header no maximiza (decisión: solo botón) | Baja |
