@@ -265,7 +265,9 @@ namespace L2TitanLauncher.ViewModels
                 {
                     // 1) ¿Hay versión nueva del launcher? (launcher.json firmado). Si la hay y
                     // se verifica, se descarga y se relanza: cerramos para que el reemplazo proceda.
-                    var current = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version ?? new Version(0, 0, 0);
+                    var asm = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version ?? new Version(0, 0, 0);
+                    var seen = VersionStore.ReadHighest();
+                    var current = (seen != null && seen > asm) ? seen : asm; // anti-rollback: nunca por debajo de lo ya visto
                     if (await _launcherUpdater.CheckAndUpdateAsync($"{_serverUrl}/launcher.json", current, s => StatusText = s, _cts.Token))
                     {
                         InvokeOnUi(() =>

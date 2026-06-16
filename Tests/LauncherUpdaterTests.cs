@@ -61,6 +61,30 @@ namespace L2TitanLauncher.Tests
             Assert.False(updated);
         }
 
+        // launcher.json v2.0.0 (más nueva) pero con el exe en OTRO host -> debe rechazarse.
+        private const string M_V2_EVIL = @"{""Version"":""2.0.0"",""Url"":""https://evil.example/x.exe"",""Sha256"":""aa"",""Size"":1}";
+        private const string SIG_V2_EVIL =
+            "ry5hM/MGHLiPNDecmJiSx4T2wFOVerV+v6eCNM+JusHVI59K0+UDodn7+OahCRlj5GZshwoyJe1sSAhNY7NP8tNr05M10Phi79kzoImxiZ3k2GOHEcB8trDN2JQdyEufvvKDwtNZ79XqHv4v6Hq39RReEPJKZ4PjfeRGDEbx0nKdT7gXUjHs1eynONTp0bnDMN6YwGEYkahoMPJGq6tBUuF45SpXLJBG19sx4JgHqLTsa6g8s0kfw6kfCcJmuwNCkNblKby2AmjEQ+6KrPCwx4Sq8xG3V5cLUyyP1QbPGhsR3TRlhRQi/eDtMaHW9oTJDq9aIttK5uzbl/nXYVbv/llY/Z/qfloPFgSc5qZMUesdFASaHUm04MrBW3QhBMjB2VauZfPIBpLhEVCq5h0VTQTI+KovYfJiM2Dhapa+l6lYMp0iVOfjRU2QHepxIKCiPruPdByWEILStQ51OcyAZRn70t3kb4D32YEajjgKfqnXqimuapDA5rTa3GFlFOWw";
+
+        [Fact]
+        public async Task CheckAndUpdate_VersionNueva_PeroHostDistinto_NoActualiza()
+        {
+            var stub = Stub(new Dictionary<string, byte[]> { [InfoUrl] = U(M_V2_EVIL), [SigUrl] = U(SIG_V2_EVIL) });
+            var updated = await new LauncherUpdater(new HttpClient(stub))
+                .CheckAndUpdateAsync(InfoUrl, new Version(1, 0, 0), _ => { }, CancellationToken.None);
+            Assert.False(updated); // firma válida + versión mayor, pero el exe apunta a otro host -> rechazado
+        }
+
+        [Theory]
+        [InlineData("https://test.local/launcher/x.exe", "https://test.local/launcher.json", true)]
+        [InlineData("https://evil.example/x.exe", "https://test.local/launcher.json", false)]  // host distinto
+        [InlineData("http://test.local/x.exe", "https://test.local/launcher.json", false)]      // no https
+        [InlineData("no-es-una-url", "https://test.local/launcher.json", false)]
+        public void IsSameHttpsHost_Casos(string url, string reference, bool expected)
+        {
+            Assert.Equal(expected, LauncherUpdater.IsSameHttpsHost(url, reference));
+        }
+
         private static byte[] U(string s) => Encoding.UTF8.GetBytes(s);
         private static StubHandler Stub(Dictionary<string, byte[]> routes) => new StubHandler(routes);
 
