@@ -83,7 +83,7 @@ GamePath con heurística `LooksLikeLineageClient` (existe `system\L2.exe`): exe-
 ## D9 — Operación
 
 - `deploy-simple.sh`: heredocs remotos con `set -e`, `rc=$?` capturado inmediatamente tras cada ssh, `unzip … || [ $? -eq 1 ]` (exit 1 = warning no fatal), permisos finales 644 archivos / 755 dirs. El manifest se REGENERA en cada deploy (paso 1) — el `manifest.json` del repo es solo un artefacto de referencia y está obsoleto hasta el próximo deploy.
-- **Sin CI en GitHub Actions** (eliminado 2026-06-16; el proyecto no lo usa). Verificación local: `dotnet build` + `dotnet test Tests/L2TitanLauncher.Tests.csproj`. El despliegue soportado es `./deploy.sh` (firma + verifica); `deploy-simple.sh` quedó obsoleto.
+- **CI (GitHub Actions; gratis al ser el repo público):** `ci.yml` (build + tests en push/PR) y `build-and-sign.yml` (tags `v*`: build+test+publish + firma con **SignPath Foundation**, requiere alta + secrets). El despliegue soportado es `./deploy.sh` (firma + verifica); `deploy-simple.sh` quedó obsoleto.
 - `StartGame`: `Verb="runas"` + handler `Win32Exception 1223` (UAC cancelado) — restaurado tras regresión; no eliminar.
 
 ## Deuda técnica registrada

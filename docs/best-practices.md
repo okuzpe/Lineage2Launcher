@@ -76,7 +76,7 @@ dotnet publish -c Release                       # single-file self-contained win
 - **Single-file, self-contained, SIN compresión** (`EnableCompressionInSingleFile=false`): un binario comprimido parece malware empaquetado para los antivirus.
 - Solo se embeben `Assets/images/background.png` + fuentes Cinzel. No añadir assets sin usar (inflan el `.exe`).
 - Tests: para acceder a tipos `internal` de `Services/` se usa `<InternalsVisibleTo Include="L2TitanLauncher.Tests" />` en el `.csproj` principal.
-- **Tests:** correr localmente con `dotnet test Tests/L2TitanLauncher.Tests.csproj`. **No hay CI en GitHub Actions** (decisión del proyecto: no se usa). Verifica `dotnet build` + `dotnet test` en verde antes de commitear.
+- **CI** (`.github/workflows/`, gratis en repo público): `ci.yml` compila + corre los tests en cada push a `main` y en PRs; `build-and-sign.yml` (tags `v*`) hace build+test+publish y **firma el exe con SignPath Foundation** (certificado gratis para OSS) → GitHub Release firmado. Un release no sale si los tests fallan.
 
 ---
 

@@ -40,7 +40,7 @@ Launcher oficial de Windows para el servidor privado **L2Titan** (Lineage 2 Inte
 
 ### Operación (lado servidor)
 - ✅ FR13 — `deploy-simple.sh`: genera manifest (SHA-256), empaqueta, sube por SSH, extrae y publica con permisos correctos (644/755); falla ruidosamente ante errores parciales.
-- ❌ FR14 — CI en GitHub Actions: ELIMINADO 2026-06-16 (el proyecto no usa GitHub Actions). Los tests se corren localmente con `dotnet test`; la firma de código del exe (SignPath) queda fuera de alcance.
+- ✅ FR14 — CI (GitHub Actions, gratis en repo público): build + tests en push/PR; firma del exe con SignPath Foundation en tags `v*` (requiere alta en SignPath + secrets `SIGNPATH_*`).
 
 ### Pendiente (roadmap)
 - ✅ FR15 — Redesplegar manifest del servidor en SHA-256 — HECHO 2026-06-16 (servidor en producción con manifest SHA-256 + HTTPS).
