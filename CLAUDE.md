@@ -6,7 +6,7 @@ Launcher de escritorio (WPF / .NET 10, MVVM) que verifica la instalación de Lin
 
 ## Mapa de capas (dónde va cada cosa)
 
-- **`Services/`** — lógica de dominio SIN dependencias de WPF, testeable: `ConfigService`, `UpdateService` (descarga/verificación), `PathSafety`, `FileIntegrity`, `ManifestSecurity`, `LauncherModels`. Nada de `Dispatcher`/`MessageBox` aquí.
+- **`Services/`** — lógica de dominio SIN dependencias de WPF, testeable: `ConfigService`, `UpdateService` (descarga/verificación), `PathSafety`, `FileIntegrity`, `ManifestSecurity` (firma), `LauncherUpdater` (auto-update del exe), `ErrorClassifier`, `LauncherModels`. Nada de `Dispatcher`/`MessageBox` aquí.
 - **`ViewModels/`** — UI/MVVM. `MainViewModel` coordina el estado del botón/progreso e implementa `IUpdateHost` (el puente por el que `UpdateService` reporta a la UI sin conocer WPF).
 - **`Tests/`** — xUnit (`net10.0-windows`, `InternalsVisibleTo`). Testea la lógica crítica de `Services/`.
 - **`Themes/`** — recursos XAML (solo las claves usadas; no acumular estilos muertos).

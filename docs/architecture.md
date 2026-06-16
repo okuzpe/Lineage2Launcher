@@ -20,7 +20,7 @@ Registro de decisiones reales del sistema tal como está construido y auditado (
 
 - Assembly: `L2TitanLauncher` (¡el .csproj se llama `Lineage2Launcher.csproj` — no confundir!).
 - Entry point: generado por WPF desde `App.xaml` (no hay `Program.cs`).
-- **Capa de servicios** (`Services/`, sin dependencias de WPF, testeable): `ConfigService` (config.json), `UpdateService` (verificación+descarga; reporta a la UI vía `IUpdateHost`), `PathSafety` (anti path-traversal), `FileIntegrity` (SHA-256), `ManifestSecurity` (firma RSA), modelos en `LauncherModels`. `MainViewModel` quedó como **coordinador de UI** (estado del botón, brushes, comandos) e implementa `IUpdateHost`. (Refactor 2026-06-16 desde el god-object original.)
+- **Capa de servicios** (`Services/`, sin dependencias de WPF, testeable): `ConfigService` (config.json), `UpdateService` (verificación+descarga; reporta a la UI vía `IUpdateHost`), `PathSafety` (anti path-traversal), `FileIntegrity` (SHA-256), `ManifestSecurity` (firma RSA), `LauncherUpdater` (auto-update del exe), `ErrorClassifier`, modelos en `LauncherModels`. `MainViewModel` quedó como **coordinador de UI** (estado del botón, brushes, comandos) e implementa `IUpdateHost`. (Refactor 2026-06-16 desde el god-object original.)
 - **Tests** (`Tests/`, xUnit, `net10.0-windows`, `InternalsVisibleTo`): 29 casos sobre la lógica crítica (ResolveSafePath, hashing, verificación de firma, resolución de config). Correr: `dotnet test Tests/L2TitanLauncher.Tests.csproj`.
 
 ## D2 — Cadena de integridad de archivos (CRÍTICA)

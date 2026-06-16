@@ -45,7 +45,7 @@ Launcher oficial de Windows para el servidor privado **L2Titan** (Lineage 2 Inte
 ### Pendiente (roadmap)
 - ✅ FR15 — Redesplegar manifest del servidor en SHA-256 — HECHO 2026-06-16 (servidor en producción con manifest SHA-256 + HTTPS).
 - ✅ FR16 — Firma del manifest (clave embebida + firma detached RSA) — HECHO 2026-06-16 (`Services/ManifestSecurity.cs` + `sign-manifest.sh`).
-- 🔜 FR17 — Auto-update del propio launcher.
+- ✅ FR17 — Auto-update del propio launcher — HECHO 2026-06-16 (`Services/LauncherUpdater.cs` + `launcher.json` firmado + `publish-launcher.sh`).
 - 🔜 FR18 — Noticias nativas en el launcher (hoy las cubre el WebView).
 
 ## 4. Requisitos no funcionales

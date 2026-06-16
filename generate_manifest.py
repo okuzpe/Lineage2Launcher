@@ -26,12 +26,12 @@ def generate_manifest(game_path, output_path):
     print(f"Escaneando: {game_path}")
     
     for root, dirs, files in os.walk(game_path):
-        # Ignorar ciertas carpetas
-        dirs[:] = [d for d in dirs if d not in {'logs', 'screenshots', 'temp', '__pycache__'}]
+        # Ignorar ciertas carpetas ('launcher' = artefactos de auto-update, no del juego)
+        dirs[:] = [d for d in dirs if d not in {'logs', 'screenshots', 'temp', '__pycache__', 'launcher'}]
         
         for file in files:
-            # Excluir manifest.json y su firma (no deben incluirse a sí mismos como archivos del juego)
-            if file.lower() in ("manifest.json", "manifest.json.sig"):
+            # Excluir manifest y los artefactos de auto-update del launcher (no son del juego)
+            if file.lower() in ("manifest.json", "manifest.json.sig", "launcher.json", "launcher.json.sig"):
                 continue
 
             # Excluir archivos *.log (el ZIP de deploy-simple.sh tambien los excluye)

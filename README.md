@@ -58,5 +58,5 @@ El servidor (nginx) sirve los archivos del cliente + `manifest.json` sobre HTTPS
 Ver la tabla en [`docs/architecture.md`](docs/architecture.md).
 
 - ✅ **Firma del manifiesto** (clave pública embebida + verificación RSA) — implementado 2026-06-16 (`Services/ManifestSecurity.cs` + `sign-manifest.sh`).
-- 🔜 Auto-actualización del propio launcher.
-- 🔜 Deploy unificado con re-firma automática y rollback (hoy la firma es un paso aparte tras regenerar el manifest).
+- ✅ **Auto-actualización del launcher** — implementado 2026-06-16 (`Services/LauncherUpdater.cs` + `launcher.json` firmado + `publish-launcher.sh`).
+- ✅ **Deploy unificado** con firma + verificación + rollback — `deploy.sh` (reemplaza a `deploy-simple.sh`).

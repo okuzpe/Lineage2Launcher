@@ -101,7 +101,8 @@ Orden de búsqueda (en `ConfigService.FindConfigFile`): (1) carpeta del exe, (2)
 
 Estado actual: servidor nginx en `downloads.l2-titan.com` (TLS Let's Encrypt), usuario `deploy` por SSH:2222 con sudo acotado.
 
-- El deploy real se hace por **`tar` sobre SSH** (el Git Bash local no tiene `zip` ni Python que exige `deploy-simple.sh`). El manifiesto se **genera en el servidor** con `python3 generate_manifest.py /var/www/lineage2 /var/www/lineage2/manifest.json`, luego `chown www-data` + `chmod 755/644`.
+- **Deploy del juego:** usa **`./deploy.sh`** (tar+ssh → genera el manifest en el server → firma → publica `manifest`+`.sig` juntos → verifica HTTPS → backup/rollback). Reemplaza a `deploy-simple.sh` (obsoleto: no firmaba). Por dentro el manifest se genera en el server con `generate_manifest.py`.
+- **Auto-update del launcher:** `Services/LauncherUpdater.cs` comprueba al arrancar `launcher.json` (firmado), y si hay versión mayor descarga el exe, verifica SHA-256 + firma RSA y se auto-reemplaza. Para publicar una versión nueva: sube `<Version>` en el csproj → `dotnet publish -c Release` → `./publish-launcher.sh <version>`.
 - **Después de generar el manifiesto: `./sign-manifest.sh`** (firma local + sube `manifest.json.sig`).
 - `setup-server-security.sh` aprovisiona un VPS desde cero (usuario `deploy`, llave SSH, sudo acotado, ufw, directorios web).
 

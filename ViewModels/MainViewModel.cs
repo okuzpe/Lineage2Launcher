@@ -43,6 +43,7 @@ namespace L2TitanLauncher.ViewModels
 
         private readonly ConfigService _configService = new();
         private readonly UpdateService _updateService;
+        private readonly LauncherUpdater _launcherUpdater;
 
         // Cached brushes - updated when state changes
         private Brush _buttonBackgroundBrush = Brushes.Transparent;
@@ -242,6 +243,7 @@ namespace L2TitanLauncher.ViewModels
         {
             _httpClient.Timeout = TimeSpan.FromMinutes(30);
             _updateService = new UpdateService(_httpClient);
+            _launcherUpdater = new LauncherUpdater(_httpClient);
 
             // Resolver configuración (find/create config.json, heurística de GamePath, https forzado)
             var resolved = _configService.Resolve(AddLog);
@@ -256,9 +258,28 @@ namespace L2TitanLauncher.ViewModels
             OpenDiscordCommand = new RelayCommand(() => System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = "https://discord.gg/xH76F9vsGf", UseShellExecute = true }));
             OpenTikTokCommand = new RelayCommand(() => System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = "https://www.tiktok.com/@omar781002", UseShellExecute = true }));
 
-            // Auto-start verification - no bloquear si falla
+            // Auto-update del launcher + auto-verificación del juego (best-effort, no bloquea).
             _ = Task.Run(async () =>
             {
+                try
+                {
+                    // 1) ¿Hay versión nueva del launcher? (launcher.json firmado). Si la hay y
+                    // se verifica, se descarga y se relanza: cerramos para que el reemplazo proceda.
+                    var current = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version ?? new Version(0, 0, 0);
+                    if (await _launcherUpdater.CheckAndUpdateAsync($"{_serverUrl}/launcher.json", current, s => StatusText = s, _cts.Token))
+                    {
+                        InvokeOnUi(() =>
+                        {
+                            StatusText = "Reiniciando para actualizar el launcher...";
+                            Application.Current.Shutdown();
+                        });
+                        return;
+                    }
+                }
+                catch (OperationCanceledException) { return; }
+                catch { /* auto-update best-effort: si falla, seguir con la versión actual */ }
+
+                // 2) Verificación/descarga de los archivos del juego.
                 try
                 {
                     await StartAutoVerification();
