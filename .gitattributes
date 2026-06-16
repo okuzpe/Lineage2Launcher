@@ -1,0 +1,16 @@
+# Normalizar saltos de línea automáticamente
+* text=auto
+
+# Los scripts de shell DEBEN usar LF: con CRLF, bash en Linux falla
+# (el \r rompe el shebang y los heredocs del deploy).
+*.sh text eol=lf
+
+# Python del servidor también en LF
+*.py text eol=lf
+
+# Binarios: nunca tocar
+*.png binary
+*.jpg binary
+*.ico binary
+*.ttf binary
+*.eps binary
