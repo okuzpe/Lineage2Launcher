@@ -1,0 +1,27 @@
+name: CI
+
+# Gratis en repos públicos. Compila + corre los 59 tests en cada push a main y en PRs.
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-test:
+    runs-on: windows-latest   # el proyecto de tests es net10.0-windows (referencia WPF)
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Build (Debug)
+        run: dotnet build -c Debug
+
+      - name: Test
+        run: dotnet test Tests/L2TitanLauncher.Tests.csproj -c Debug
