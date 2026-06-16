@@ -27,19 +27,19 @@ Registro de decisiones reales del sistema tal como está construido y auditado (
 
 **Decisión:** SHA-256 hex minúscula, comparación `OrdinalIgnoreCase`, idéntico en los DOS lados:
 - Servidor: `generate_manifest.py::calculate_sha256` → `hexdigest().lower()`
-- Cliente: `MainViewModel.CalculateFileHash` → `SHA256.Create()` + `ToLowerInvariant()`
+- Cliente: `Services/FileIntegrity.ComputeSha256` → `SHA256.Create()` + `ToLowerInvariant()`
 
-**Por qué:** MD5 roto + el hash llega del mismo canal que el archivo. Ambos lados DEBEN cambiar juntos; cambiar uno solo rompe el 100 % de las descargas. ⚠️ El servidor aún sirve el manifest MD5 viejo — primer `deploy-simple.sh` lo corrige.
+**Por qué:** MD5 roto + el hash llega del mismo canal que el archivo. Ambos lados DEBEN cambiar juntos; cambiar uno solo rompe el 100 % de las descargas. (El servidor ya sirve el manifest SHA-256 en producción desde 2026-06-16.)
 
 **Regla para agentes:** nunca tocar el algoritmo/formato de hash en un solo lado.
 
 ## D3 — Canal de updates: HTTPS forzado
 
-**Decisión:** `LoadConfiguration` rechaza cualquier `ServerUrl`/`ManifestUrl` que no empiece por `https://` y restaura el default `https://downloads.l2-titan.com`.
+**Decisión:** `Services/ConfigService.EnforceHttps` (invocado por `Resolve`) rechaza cualquier `ServerUrl`/`ManifestUrl` que no empiece por `https://` y restaura el default `https://downloads.l2-titan.com`.
 
 **Por qué:** un launcher que descarga ejecutables sobre HTTP = RCE por MITM. Consecuencia aceptada: no se puede testear contra servidor HTTP local; usar endpoint HTTPS real o túnel.
 
-**Implementado (D2+D3, 2026-06-16):** firma RSA detached del manifest (`manifest.json.sig`, PKCS#1 v1.5 / SHA-256). Clave pública embebida en `ViewModels/ManifestSecurity.cs`; la privada vive solo local (`keys/`, fuera de git) y se firma con `sign-manifest.sh` tras regenerar el manifest. El cliente verifica la firma ANTES de confiar en el manifest — elimina la confianza exclusiva en TLS/hosting. Regla: si regeneras el manifest, vuelve a firmarlo o el launcher lo rechazará.
+**Implementado (D2+D3, 2026-06-16):** firma RSA detached del manifest (`manifest.json.sig`, PKCS#1 v1.5 / SHA-256). Clave pública embebida en `Services/ManifestSecurity.cs`; la privada vive solo local (`keys/`, fuera de git) y se firma con `sign-manifest.sh` tras regenerar el manifest. El cliente verifica la firma ANTES de confiar en el manifest — elimina la confianza exclusiva en TLS/hosting. Regla: si regeneras el manifest, vuelve a firmarlo o el launcher lo rechazará.
 
 ## D4 — Descarga: staging atómico + clasificación de fallos
 
@@ -75,7 +75,7 @@ GamePath con heurística `LooksLikeLineageClient` (existe `system\L2.exe`): exe-
 
 ## D8 — UI / recursos
 
-- Claves que el ViewModel resuelve con `FindResource` y DEBEN existir: `PlayButtonGradientBrush`, `GoldBorderGradientBrush`, `BrightGoldBrush`.
+- Claves que el ViewModel resuelve con `FindResource` y DEBEN existir: `PlayButtonGradientBrush`, `GoldBorderGradientBrush`. (`BrightGoldBrush` se consume como `StaticResource` desde `MainWindow.xaml`, no vía el VM.)
 - Pack URIs usan el assembly real: `pack://application:,,,/L2TitanLauncher;component/...`.
 - WebView2: `Source` se asigna en code-behind tras `EnsureCoreWebView2Async` (asignarlo en XAML carrea la init); `_firstNavigationHandled` hace que solo el fallo de navegación inicial muestre el fallback y que el éxito restaure el WebView; `Dispose()` en `Closed`.
 - Solo se embebe `Assets/images/background.png` + fuentes Cinzel; assets no referenciados se eliminaron (estaban inflando el exe ~10 MB).

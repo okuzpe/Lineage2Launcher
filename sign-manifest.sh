@@ -7,7 +7,7 @@
 #
 # La clave privada (keys/manifest_private.pem) NUNCA sale de esta máquina ni se
 # sube a git. La pública correspondiente está embebida en el launcher
-# (ViewModels/ManifestSecurity.cs). Si pierdes la privada, hay que generar un
+# (Services/ManifestSecurity.cs). Si pierdes la privada, hay que generar un
 # par nuevo y re-publicar el launcher con la nueva pública.
 #
 # Uso:  ./sign-manifest.sh

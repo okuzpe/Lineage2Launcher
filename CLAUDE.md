@@ -18,9 +18,9 @@ Launcher de escritorio (WPF / .NET 10, MVVM) que verifica la instalación de Lin
 2. **HTTPS forzado**: `ConfigService.EnforceHttps` rechaza cualquier URL no-`https://`.
 3. **Anti path-traversal en AMBOS lados**: cliente `PathSafety.ResolveSafePath` (rechaza `..`/absolutas/UNC), servidor filtra en `generate_manifest.py`. También validar `GameExecutable`.
 4. **Firma del manifiesto**: el cliente verifica `manifest.json.sig` (RSA, clave pública en `ManifestSecurity.cs`) ANTES de confiar. La clave PRIVADA vive solo en `keys/` (fuera de git). **Tras regenerar el manifiesto, re-firmar con `./sign-manifest.sh`** o el launcher lo rechaza.
-4. **Staging atómico**: descargar a `.part`, verificar hash, luego `File.Move`. Borrar el `.part` en todo camino de fallo.
-5. **Hilos**: trabajo pesado en `Task.Run`; tocar UI solo vía `RaiseOnUi`/`InvokeOnUi` (con null-guard de `Application.Current`). `Shutdown()` hace `_cts.Cancel()` pero **NO** `_cts.Dispose()` (loops aún leen el token).
-6. **Errores de usuario**: lanzar `LauncherError` con mensaje accionable (se muestra tal cual). `HashMismatchException` = no reintentar.
+5. **Staging atómico**: descargar a `.part`, verificar hash, luego `File.Move`. Borrar el `.part` en todo camino de fallo.
+6. **Hilos**: trabajo pesado en `Task.Run`; tocar UI solo vía `RaiseOnUi`/`InvokeOnUi` (con null-guard de `Application.Current`). `Shutdown()` hace `_cts.Cancel()` pero **NO** `_cts.Dispose()` (loops aún leen el token).
+7. **Errores de usuario**: lanzar `LauncherError` con mensaje accionable (se muestra tal cual). `HashMismatchException` = no reintentar.
 
 ## Comandos
 

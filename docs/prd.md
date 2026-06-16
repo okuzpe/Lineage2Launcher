@@ -30,8 +30,8 @@ Launcher oficial de Windows para el servidor privado **L2Titan** (Lineage 2 Inte
 
 ### Contenido y comunidad
 - ✅ FR7 — Hero embebido con WebView2 mostrando `l2-titan.com` (fallback si falta el runtime o falla la navegación inicial).
-- ✅ FR8 — Drawer de rates del servidor (XP/SP/Adena/Drop/Spoil) con animación slide-in.
-- ✅ FR9 — Accesos directos: Website, Discord; estado del servidor (Login/Game) con polling.
+- ❌ FR8 — Drawer de rates del servidor — ELIMINADO 2026-06-16 (código del VM retirado en la simplificación de UI; sin binding en el XAML actual).
+- ⚠️ FR9 — Accesos directos Website/Discord/TikTok: ✅ presentes. El estado del servidor (Login/Game) con polling fue ELIMINADO 2026-06-16 (no había UI que lo mostrara).
 
 ### Errores y resiliencia
 - ✅ FR10 — Mensajes de error accionables y específicos en la barra de estado (`LauncherError`): sin conexión, manifest corrupto, archivo de servidor corrupto (hash), sin espacio en disco, sin permisos de escritura, juego abierto bloqueando archivos, conexión estancada (timeout 60 s).
@@ -43,8 +43,8 @@ Launcher oficial de Windows para el servidor privado **L2Titan** (Lineage 2 Inte
 - ✅ FR14 — CI (GitHub Actions): build + firma vía SignPath con artifact-id numérico.
 
 ### Pendiente (roadmap)
-- 🔜 FR15 — **Redesplegar manifest del servidor en SHA-256** (el servidor aún sirve el manifest MD5 antiguo; bloquea todo update hasta redeploy con `deploy-simple.sh`).
-- 🔜 FR16 — Firma del manifest (clave embebida + firma detached) para que la integridad no dependa solo de HTTPS.
+- ✅ FR15 — Redesplegar manifest del servidor en SHA-256 — HECHO 2026-06-16 (servidor en producción con manifest SHA-256 + HTTPS).
+- ✅ FR16 — Firma del manifest (clave embebida + firma detached RSA) — HECHO 2026-06-16 (`Services/ManifestSecurity.cs` + `sign-manifest.sh`).
 - 🔜 FR17 — Auto-update del propio launcher.
 - 🔜 FR18 — Noticias nativas en el launcher (hoy las cubre el WebView).
 

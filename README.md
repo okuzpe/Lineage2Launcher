@@ -19,7 +19,7 @@ Launcher de escritorio para el servidor **L2Titan** (Lineage 2): verifica la ins
 4. Reintentos con backoff para errores de red; los errores de hash (archivo corrupto en el servidor) **no** se reintentan.
 5. `system\L2.exe` se lanza al pulsar PLAY.
 
-> El **hash es SHA-256 en ambos lados** y DEBE mantenerse sincronizado: cliente (`MainViewModel.CalculateFileHash`) ↔ servidor (`generate_manifest.py::calculate_sha256`). Cambiar el algoritmo en un solo lado rompe el 100 % de las verificaciones.
+> El **hash es SHA-256 en ambos lados** y DEBE mantenerse sincronizado: cliente (`Services/FileIntegrity.ComputeSha256`) ↔ servidor (`generate_manifest.py::calculate_sha256`). Cambiar el algoritmo en un solo lado rompe el 100 % de las verificaciones.
 
 ## Compilar
 
@@ -55,7 +55,8 @@ El servidor (nginx) sirve los archivos del cliente + `manifest.json` sobre HTTPS
 
 ## Deuda técnica conocida
 
-Ver la tabla en [`docs/architecture.md`](docs/architecture.md). Lo prioritario:
+Ver la tabla en [`docs/architecture.md`](docs/architecture.md).
 
-1. **Firma del manifiesto** (clave pública embebida + verificación). Hoy la integridad depende solo de TLS/hosting; firmar el manifiesto es lo que evita un RCE si el servidor o el canal se comprometen.
-2. Auto-actualización del propio launcher.
+- ✅ **Firma del manifiesto** (clave pública embebida + verificación RSA) — implementado 2026-06-16 (`Services/ManifestSecurity.cs` + `sign-manifest.sh`).
+- 🔜 Auto-actualización del propio launcher.
+- 🔜 Deploy unificado con re-firma automática y rollback (hoy la firma es un paso aparte tras regenerar el manifest).
