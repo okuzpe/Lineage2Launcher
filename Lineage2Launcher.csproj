@@ -55,26 +55,9 @@
     <Resource Include="Assets\images\background.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
-    <!-- Fonts - Embed as Resources -->
-    <Resource Include="Fonts\Cinzel-Regular.ttf">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
+    <!-- Fonts - solo Cinzel-Bold se usa (EpicTitleFont en Themes/Colors.xaml); el resto
+         de pesos quedó sin referencia tras la simplificación de la UI. -->
     <Resource Include="Fonts\Cinzel-Bold.ttf">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Fonts\Cinzel-SemiBold.ttf">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Fonts\Cinzel-Medium.ttf">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Fonts\Cinzel-ExtraBold.ttf">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Fonts\Cinzel-Black.ttf">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Fonts\Cinzel-VariableFont_wght.ttf">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
   </ItemGroup>

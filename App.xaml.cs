@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Windows;
-using System.Windows.Media;
 using System.Windows.Threading;
 using L2TitanLauncher.ViewModels;
 
@@ -20,7 +17,7 @@ namespace L2TitanLauncher
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
-            
+
 #if DEBUG
             AllocConsole();
             Console.WriteLine("=== L2TitanLauncher Debug Mode ===");
@@ -28,161 +25,80 @@ namespace L2TitanLauncher
             Console.WriteLine($"Startup Time: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
             Console.WriteLine();
 #endif
-            
-            // Configurar manejadores globales de excepciones
+
+            // Las fuentes Cinzel se resuelven por pack URI desde Themes/Colors.xaml
+            // (EpicTitleFont). No hace falta cargarlas a mano en código.
             SetupExceptionHandlers();
-            
-            // Cargar fuentes embebidas si están disponibles
-            LoadEmbeddedFonts();
-            
+
 #if DEBUG
             Console.WriteLine("Application started successfully.");
             Console.WriteLine();
 #endif
         }
 
+        // Persiste las excepciones no manejadas a un archivo para poder diagnosticar
+        // crashes en Release (los handlers antes solo escribían a Console/Debug, que se
+        // pierden sin consola). Nunca debe lanzar.
+        private static void WriteCrashLog(string kind, Exception? ex)
+        {
+            try
+            {
+                var dir = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "L2TitanLauncher");
+                Directory.CreateDirectory(dir);
+                var entry =
+                    $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {kind}: {ex?.Message}\n{ex?.StackTrace}\n" +
+                    (ex?.InnerException != null
+                        ? $"  Inner: {ex.InnerException.Message}\n{ex.InnerException.StackTrace}\n"
+                        : string.Empty) +
+                    new string('-', 60) + "\n";
+                File.AppendAllText(Path.Combine(dir, "crash.log"), entry);
+            }
+            catch { /* el logging de crash jamás debe propagar */ }
+        }
+
         private void SetupExceptionHandlers()
         {
-            // Manejador para excepciones no manejadas en el hilo UI
+            // Excepciones no manejadas en el hilo de UI: log + aviso, sin cerrar la app.
             DispatcherUnhandledException += (sender, args) =>
             {
-                string errorMessage = $"Unhandled UI Thread Exception: {args.Exception.Message}";
-                string fullError = $"{errorMessage}\n\nStack Trace:\n{args.Exception.StackTrace}";
-                
-                if (args.Exception.InnerException != null)
-                {
-                    fullError += $"\n\nInner Exception: {args.Exception.InnerException.Message}\n{args.Exception.InnerException.StackTrace}";
-                }
-                
-                Console.WriteLine($"\n!!! {errorMessage}");
-                Console.WriteLine(fullError);
-                System.Diagnostics.Debug.WriteLine($"!!! {errorMessage}");
-                System.Diagnostics.Debug.WriteLine(fullError);
-                
-                // Intentar loggear en el ViewModel si está disponible
+                WriteCrashLog("Unhandled UI Thread Exception", args.Exception);
+                Console.WriteLine($"\n!!! Unhandled UI Thread Exception: {args.Exception.Message}");
+                System.Diagnostics.Debug.WriteLine($"!!! {args.Exception}");
+
                 try
                 {
-                    if (MainWindow?.DataContext is ViewModels.MainViewModel vm)
-                    {
+                    if (MainWindow?.DataContext is MainViewModel vm)
                         vm.AddLog($"!!! CRITICAL ERROR: {args.Exception.Message}", args.Exception);
-                    }
                 }
                 catch { }
-                
-                // Mostrar mensaje al usuario
+
                 MessageBox.Show(
                     $"An unexpected error occurred:\n\n{args.Exception.Message}\n\nThe application will continue, but some features may not work correctly.",
                     "Error",
                     MessageBoxButton.OK,
-                    MessageBoxImage.Error
-                );
-                
-                // Marcar como manejado para que la app no se cierre
+                    MessageBoxImage.Error);
+
                 args.Handled = true;
             };
-            
-            // Manejador para excepciones no manejadas en otros hilos
+
+            // Excepciones no manejadas en hilos de fondo: persistir para diagnóstico.
             AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
             {
-                Exception? ex = args.ExceptionObject as Exception;
-                if (ex != null)
+                var ex = args.ExceptionObject as Exception;
+                WriteCrashLog("Unhandled Background Thread Exception", ex);
+                Console.WriteLine($"\n!!! Unhandled Background Thread Exception: {ex?.Message}");
+                System.Diagnostics.Debug.WriteLine($"!!! {ex}");
+
+                try
                 {
-                    string errorMessage = $"Unhandled Background Thread Exception: {ex.Message}";
-                    string fullError = $"{errorMessage}\n\nStack Trace:\n{ex.StackTrace}";
-                    
-                    if (ex.InnerException != null)
-                    {
-                        fullError += $"\n\nInner Exception: {ex.InnerException.Message}\n{ex.InnerException.StackTrace}";
-                    }
-                    
-                    Console.WriteLine($"\n!!! {errorMessage}");
-                    Console.WriteLine(fullError);
-                    System.Diagnostics.Debug.WriteLine($"!!! {errorMessage}");
-                    System.Diagnostics.Debug.WriteLine(fullError);
-                    
-                    // Intentar loggear en el ViewModel si está disponible
-                    try
-                    {
-                        if (MainWindow?.DataContext is ViewModels.MainViewModel vm)
-                        {
-                            Application.Current.Dispatcher.Invoke(() =>
-                            {
-                                vm.AddLog($"!!! CRITICAL BACKGROUND ERROR: {ex.Message}", ex);
-                            });
-                        }
-                    }
-                    catch { }
+                    if (MainWindow?.DataContext is MainViewModel vm && ex != null)
+                        Application.Current.Dispatcher.Invoke(() =>
+                            vm.AddLog($"!!! CRITICAL BACKGROUND ERROR: {ex.Message}", ex));
                 }
+                catch { }
             };
-        }
-        
-        private void LoadEmbeddedFonts()
-        {
-            try
-            {
-                // Cargar fuentes desde recursos embebidos usando pack:// URIs con assembly name
-                var fontResources = new List<(string resourcePath, string fontName)>
-                {
-                    ("Fonts/Cinzel-Regular.ttf", "Cinzel"),
-                    ("Fonts/Cinzel-Bold.ttf", "Cinzel"),
-                    ("Fonts/Cinzel-SemiBold.ttf", "Cinzel"),
-                    ("Fonts/Cinzel-Medium.ttf", "Cinzel"),
-                    ("Fonts/Cinzel-ExtraBold.ttf", "Cinzel"),
-                    ("Fonts/Cinzel-Black.ttf", "Cinzel"),
-                    ("Fonts/Cinzel-VariableFont_wght.ttf", "Cinzel")
-                };
-                
-                int loadedCount = 0;
-                foreach (var (resourcePath, fontName) in fontResources)
-                {
-                    try
-                    {
-                        // Formato: pack://application:,,,/AssemblyName;component/ResourcePath#FontName
-                        var fontUri = new Uri($"pack://application:,,,/L2TitanLauncher;component/{resourcePath}#{fontName}", UriKind.Absolute);
-                        
-                        // Crear FontFamily usando el URI de pack
-                        var fontFamily = new FontFamily(fontUri.ToString());
-                        
-                        // Verificar que la fuente se puede cargar creando un Typeface
-                        var typeface = new Typeface(fontFamily, FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
-                        if (typeface.TryGetGlyphTypeface(out var glyphTypeface))
-                        {
-                            // Get actual font name from metadata
-                            string actualFontName = glyphTypeface.Win32FamilyNames.Values.FirstOrDefault() ?? fontName;
-                            if (actualFontName != fontName)
-                            {
-                                // Try with actual font name
-                                fontUri = new Uri($"pack://application:,,,/L2TitanLauncher;component/{resourcePath}#{actualFontName}", UriKind.Absolute);
-                                fontFamily = new FontFamily(fontUri.ToString());
-                                System.Diagnostics.Debug.WriteLine($"  Detected font name: {actualFontName} (expected: {fontName})");
-                            }
-                            
-                            loadedCount++;
-                            System.Diagnostics.Debug.WriteLine($"✓ Loaded embedded font: {Path.GetFileName(resourcePath)} as {actualFontName}");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        // No es crítico si alguna fuente falla, continuar con las demás
-                        System.Diagnostics.Debug.WriteLine($"⚠ Could not load embedded font {Path.GetFileName(resourcePath)}: {ex.Message}");
-                    }
-                }
-                
-                if (loadedCount > 0)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Successfully loaded {loadedCount} embedded Cinzel font(s)");
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine("No embedded Cinzel fonts were loaded. Using system fonts as fallback.");
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error loading embedded fonts: {ex.Message}");
-            }
         }
     }
 }
-
-

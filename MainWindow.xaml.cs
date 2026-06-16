@@ -82,6 +82,18 @@ namespace L2TitanLauncher
                 // Hide the raw WebView2 error page in favor of the styled fallback panel.
                 settings.IsBuiltInErrorPageEnabled = false;
 
+                // Enlaces que piden ventana nueva (target=_blank / popups) se abren en el
+                // navegador del SO, no en una ventana WebView2 sin control (hardening).
+                LauncherWebView.CoreWebView2.NewWindowRequested += (s, args) =>
+                {
+                    args.Handled = true;
+                    try
+                    {
+                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = args.Uri, UseShellExecute = true });
+                    }
+                    catch { }
+                };
+
                 // The XAML Source was removed; navigate here so the custom userDataFolder
                 // environment is honored. NavigationCompleted handles load failures.
                 LauncherWebView.CoreWebView2.NavigationCompleted += LauncherWebView_NavigationCompleted;
