@@ -59,7 +59,7 @@ rollback() {
 # --- 2. Subir archivos del juego (tar+ssh, aditivo) ---------------------------
 say "Subiendo archivos del juego (tar+ssh, con compresión)..."
 ( cd "$GAME_PATH" && tar --exclude=./logs --exclude=./screenshots --exclude=./temp \
-     --exclude='*.log' --exclude='manifest.json' --exclude='manifest.json.sig' -czf - . ) \
+     --exclude='*.log' --exclude='*.part' --exclude='manifest.json' --exclude='manifest.json.sig' -czf - . ) \
   | ssh $SSH_OPTS "$SSH_USER@$SERVER" "tar -xzf - -C '$REMOTE'"
 
 # --- 3. Generar el manifiesto EN el server (a .new) ---------------------------
