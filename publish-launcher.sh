@@ -7,14 +7,16 @@
 #
 # ANTES de correrlo:
 #   1. Sube la <Version> en Lineage2Launcher.csproj (p.ej. 1.0.1).
-#   2. dotnet publish -c Release
+#   2. Consigue el exe FIRMADO con Authenticode (SignPath):
+#        git tag vX.Y.Z && git push --tags   → CI lo firma y crea un GitHub Release.
+#        Descarga ese L2TitanLauncher.exe firmado (p.ej. a ./signed/).
+#      Un exe SIN firmar dispara SmartScreen/antivirus en el cliente; por eso este
+#      script lo RECHAZA salvo que pases --allow-unsigned (solo para pruebas internas).
 #
-# Uso:  ./publish-launcher.sh 1.0.1     (la versión DEBE coincidir con la del csproj)
+# Uso:  ./publish-launcher.sh <version> [--exe <ruta-al-exe-firmado>] [--allow-unsigned]
+#   ./publish-launcher.sh 1.0.1 --exe ./signed/L2TitanLauncher.exe
 # ----------------------------------------------------------------------------
 set -euo pipefail
-
-VERSION="${1:-}"
-[ -n "$VERSION" ] || { echo "Uso: $0 <version>  (p.ej. 1.0.1, igual que la <Version> del csproj)" >&2; exit 1; }
 
 SERVER="212.227.87.65"
 SSH_PORT="22"
@@ -26,8 +28,62 @@ PUBLIC_KEY="keys/manifest_public.pem"
 BASE_URL="https://downloads.l2-titan.com"
 SSH_OPTS="-p $SSH_PORT -o BatchMode=yes -o ConnectTimeout=20"
 
-[ -f "$EXE" ]         || { echo "ERROR: no existe $EXE — corre 'dotnet publish -c Release' primero." >&2; exit 1; }
+VERSION=""
+ALLOW_UNSIGNED=0
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --exe)            EXE="${2:-}"; shift ;;
+        --allow-unsigned) ALLOW_UNSIGNED=1 ;;
+        -*)               echo "Opción desconocida: $1" >&2; exit 1 ;;
+        *)                if [ -z "$VERSION" ]; then VERSION="$1"; else echo "ERROR: argumento extra '$1'" >&2; exit 1; fi ;;
+    esac
+    shift
+done
+[ -n "$VERSION" ] || { echo "Uso: $0 <version> [--exe <ruta-al-exe-firmado>] [--allow-unsigned]" >&2; exit 1; }
+
+[ -f "$EXE" ]         || { echo "ERROR: no existe $EXE — pásalo con --exe o corre 'dotnet publish -c Release'." >&2; exit 1; }
 [ -f "$PRIVATE_KEY" ] || { echo "ERROR: falta la clave privada $PRIVATE_KEY" >&2; exit 1; }
+
+# --- No publicar un exe sin firmar (Authenticode): SmartScreen/AV lo marcarían ---
+verify_authenticode() {
+    local f="$1"
+    if command -v powershell.exe >/dev/null 2>&1; then
+        local winpath ps out status signer
+        winpath=$(cygpath -w "$f" 2>/dev/null || wslpath -w "$f" 2>/dev/null || echo "$f")
+        ps='$s = Get-AuthenticodeSignature -LiteralPath "__P__"; Write-Output $s.Status; if ($s.SignerCertificate) { Write-Output $s.SignerCertificate.Subject } else { Write-Output "(ninguno)" }'
+        ps="${ps/__P__/$winpath}"
+        out=$(powershell.exe -NoProfile -NonInteractive -Command "$ps" 2>/dev/null | tr -d '\r')
+        status=$(printf '%s\n' "$out" | sed -n '1p')
+        signer=$(printf '%s\n' "$out" | sed -n '2p')
+        echo "    Authenticode: status=${status:-?} signer=${signer:-?}"
+        case "$status" in
+            NotSigned|HashMismatch|"") return 1 ;;
+        esac
+        [ -n "$signer" ] && [ "$signer" != "(ninguno)" ]
+        return $?
+    elif command -v osslsigncode >/dev/null 2>&1; then
+        if osslsigncode verify "$f" >/dev/null 2>&1; then
+            echo "    Authenticode: firmado (osslsigncode verify OK)"; return 0
+        fi
+        echo "    Authenticode: SIN FIRMAR / no verifica (osslsigncode)"; return 1
+    else
+        echo "    AVISO: sin powershell.exe ni osslsigncode; no puedo verificar la firma." >&2
+        return 1
+    fi
+}
+
+echo ">>> Verificando firma Authenticode de $EXE..."
+if ! verify_authenticode "$EXE"; then
+    if [ "$ALLOW_UNSIGNED" -eq 1 ]; then
+        echo ">>> ADVERTENCIA: exe SIN FIRMAR; publico igualmente por --allow-unsigned (SmartScreen/AV avisarán)." >&2
+    else
+        echo "ERROR: el exe NO está firmado con Authenticode → SmartScreen/antivirus lo marcarán." >&2
+        echo "       Publica el exe firmado por SignPath (GitHub Release del tag v*):" >&2
+        echo "         $0 $VERSION --exe ./signed/L2TitanLauncher.exe" >&2
+        echo "       (Solo para pruebas internas: añade --allow-unsigned.)" >&2
+        exit 1
+    fi
+fi
 
 SHA=$(sha256sum "$EXE" | awk '{print $1}')
 SIZE=$(stat -c%s "$EXE" 2>/dev/null || wc -c < "$EXE")

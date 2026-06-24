@@ -661,49 +661,12 @@ ZIP_SETUP
 
     print_success "ZIP subido exitosamente a ${REMOTE_ZIP_DIR}/Lineage2.zip"
 
-    # Subir Launcher al servidor
-    print_info "Subiendo Launcher al servidor..."
-    
-    if [ ! -f "$LAUNCHER_EXE_PATH" ]; then
-        print_error "El launcher no existe en: $LAUNCHER_EXE_PATH"
-        exit 1
-    fi
-    
-    # Crear ZIP del launcher localmente
-    LAUNCHER_DIR=$(dirname "$LAUNCHER_EXE_PATH")
-    LAUNCHER_FILE=$(basename "$LAUNCHER_EXE_PATH")
-    LAUNCHER_ZIP_NAME="L2TitanLauncher.zip"
-    LAUNCHER_ZIP_PATH="${LAUNCHER_DIR}/${LAUNCHER_ZIP_NAME}"
-    print_info "Creando ZIP del launcher..."
-    
-    if [ -f "$LAUNCHER_ZIP_PATH" ]; then
-        rm -f "$LAUNCHER_ZIP_PATH"
-    fi
-    
-    cd "$LAUNCHER_DIR"
-    zip "$LAUNCHER_ZIP_PATH" "$LAUNCHER_FILE" > /dev/null 2>&1
-    cd - > /dev/null 2>&1
-    
-    if [ ! -f "$LAUNCHER_ZIP_PATH" ]; then
-        print_error "Error al crear el ZIP del launcher"
-        exit 1
-    fi
-    
-    LAUNCHER_ZIP_SIZE=$(du -h "$LAUNCHER_ZIP_PATH" | cut -f1)
-    print_success "ZIP del launcher creado: $LAUNCHER_ZIP_PATH ($LAUNCHER_ZIP_SIZE)"
-    
-    # Subir a /tmp y mover con sudo
-    print_info "Subiendo ZIP del launcher al servidor..."
-    scp $SCP_OPTS "$LAUNCHER_ZIP_PATH" "${SERVER_USER}@${SERVER_IP}:${REMOTE_TEMP_DIR}/${LAUNCHER_ZIP_NAME}"
-
-    if [ $? -ne 0 ]; then
-        print_error "Error al subir el ZIP del Launcher"
-        exit 1
-    fi
-
-    ssh $SSH_OPTS "$SERVER_USER@$SERVER_IP" "sudo mv ${REMOTE_TEMP_DIR}/${LAUNCHER_ZIP_NAME} ${REMOTE_ZIP_DIR}/${LAUNCHER_ZIP_NAME} && sudo chmod 644 ${REMOTE_ZIP_DIR}/${LAUNCHER_ZIP_NAME} && sudo chown www-data:www-data ${REMOTE_ZIP_DIR}/${LAUNCHER_ZIP_NAME} 2>/dev/null || sudo chown nginx:nginx ${REMOTE_ZIP_DIR}/${LAUNCHER_ZIP_NAME} 2>/dev/null || true"
-
-    print_success "Launcher (ZIP) subido exitosamente a ${REMOTE_ZIP_DIR}/${LAUNCHER_ZIP_NAME}"
+    # NOTA: este script NO publica el launcher. La publicación del exe va por
+    # `publish-launcher.sh`, que sube el exe a /launcher/L2TitanLauncher.exe Y re-firma
+    # launcher.json (Sha256/Size). Subir el exe aquí sin re-firmar el JSON rompería el
+    # auto-update (el cliente rechazaría el exe por hash). URL oficial del launcher:
+    #   https://downloads.l2-titan.com/launcher/L2TitanLauncher.exe
+    print_info "Launcher: omitido aquí. Publícalo con ./publish-launcher.sh (firma launcher.json)."
 
     # Subir manifest.json a /tmp
     print_info "Subiendo manifest.json..."
@@ -802,14 +765,14 @@ print_info "  Archivos descomprimidos en: $DEPLOY_PATH"
 print_info "  URL del servidor: $SERVER_URL"
 print_info "  URL del manifest: $SERVER_URL/manifest.json"
 print_info "  URL del ZIP: $SERVER_URL/zip/Lineage2.zip"
-print_info "  URL del Launcher: $SERVER_URL/zip/L2TitanLauncher.zip"
+print_info "  URL del Launcher (la publica publish-launcher.sh): $SERVER_URL/launcher/L2TitanLauncher.exe"
 
 print_info ""
 print_info "Próximos pasos:"
 print_info "  1. Verifica que el servidor responde: curl $SERVER_URL/manifest.json"
 print_info "  2. Verifica archivos: curl -I $SERVER_URL/system/L2.exe"
 print_info "  3. Verifica ZIP: curl -I $SERVER_URL/zip/Lineage2.zip"
-print_info "  4. Verifica Launcher: curl -I $SERVER_URL/zip/L2TitanLauncher.zip"
+print_info "  4. Publica/verifica el launcher: ./publish-launcher.sh  (URL: $SERVER_URL/launcher/L2TitanLauncher.exe)"
 print_info "  5. Test conexión: $0 --test-connection"
 
 print_success ""
