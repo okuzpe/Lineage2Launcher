@@ -32,7 +32,7 @@ VERSION=""
 ALLOW_UNSIGNED=0
 while [ $# -gt 0 ]; do
     case "$1" in
-        --exe)            EXE="${2:-}"; shift ;;
+        --exe)            case "${2:-}" in ""|-*) echo "ERROR: --exe requiere una ruta a un .exe" >&2; exit 1 ;; esac; EXE="$2"; shift ;;
         --allow-unsigned) ALLOW_UNSIGNED=1 ;;
         -*)               echo "Opción desconocida: $1" >&2; exit 1 ;;
         *)                if [ -z "$VERSION" ]; then VERSION="$1"; else echo "ERROR: argumento extra '$1'" >&2; exit 1; fi ;;
@@ -45,6 +45,11 @@ done
 [ -f "$PRIVATE_KEY" ] || { echo "ERROR: falta la clave privada $PRIVATE_KEY" >&2; exit 1; }
 
 # --- No publicar un exe sin firmar (Authenticode): SmartScreen/AV lo marcarían ---
+# NOTA de seguridad: esta verificación es para UX (SmartScreen/AV). La seguridad del canal
+# de auto-update NO depende de ella: el cliente valida la firma RSA de launcher.json.
+# Pin opcional del firmante esperado: EXPECTED_SIGNER="SignPath Foundation" (recomendado).
+EXPECTED_SIGNER="${EXPECTED_SIGNER:-}"
+
 verify_authenticode() {
     local f="$1"
     if command -v powershell.exe >/dev/null 2>&1; then
@@ -56,16 +61,30 @@ verify_authenticode() {
         status=$(printf '%s\n' "$out" | sed -n '1p')
         signer=$(printf '%s\n' "$out" | sed -n '2p')
         echo "    Authenticode: status=${status:-?} signer=${signer:-?}"
-        case "$status" in
-            NotSigned|HashMismatch|"") return 1 ;;
-        esac
-        [ -n "$signer" ] && [ "$signer" != "(ninguno)" ]
-        return $?
-    elif command -v osslsigncode >/dev/null 2>&1; then
-        if osslsigncode verify "$f" >/dev/null 2>&1; then
-            echo "    Authenticode: firmado (osslsigncode verify OK)"; return 0
+        # Allow-list estricta: SOLO 'Valid' (firma presente + cadena de confianza OK).
+        # Cualquier otro estado (NotSigned, NotTrusted, UnknownError, HashMismatch...) se rechaza.
+        [ "$status" = "Valid" ] || return 1
+        if [ -n "$EXPECTED_SIGNER" ]; then
+            case "$signer" in
+                *"$EXPECTED_SIGNER"*) : ;;
+                *) echo "    ERROR: firmante '$signer' no coincide con EXPECTED_SIGNER='$EXPECTED_SIGNER'" >&2; return 1 ;;
+            esac
         fi
-        echo "    Authenticode: SIN FIRMAR / no verifica (osslsigncode)"; return 1
+        return 0
+    elif command -v osslsigncode >/dev/null 2>&1; then
+        # 'osslsigncode verify' sin -CAfile NO valida la cadena de confianza (acepta self-signed).
+        # Por eso exigimos pin EXPECTED_SIGNER; sin él, fail-closed.
+        if ! osslsigncode verify "$f" >/dev/null 2>&1; then
+            echo "    Authenticode: SIN FIRMAR / firma inválida (osslsigncode)"; return 1
+        fi
+        if [ -z "$EXPECTED_SIGNER" ]; then
+            echo "    ERROR: osslsigncode no valida confianza sin pin. Define EXPECTED_SIGNER='SignPath Foundation' o usa una máquina con powershell.exe." >&2
+            return 1
+        fi
+        if osslsigncode verify "$f" 2>/dev/null | grep -qF "$EXPECTED_SIGNER"; then
+            echo "    Authenticode: firmado, firmante coincide ($EXPECTED_SIGNER)"; return 0
+        fi
+        echo "    ERROR: firmante no coincide con EXPECTED_SIGNER='$EXPECTED_SIGNER'" >&2; return 1
     else
         echo "    AVISO: sin powershell.exe ni osslsigncode; no puedo verificar la firma." >&2
         return 1
